@@ -5,15 +5,12 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import datawave.microservice.authorization.jwt.JWTRestTemplate;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
-import datawave.microservice.cached.CacheInspector;
-import datawave.security.authorization.AuthorizationException;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.DatawaveUserInfo;
 import datawave.security.authorization.SubjectIssuerDNPair;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.cache.CacheType;
@@ -31,7 +28,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -41,11 +37,10 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 
 import static datawave.security.authorization.DatawaveUser.UserType.USER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 //@Category(IntegrationTest.class)
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class AuthorizationServiceTest {
     private static final SubjectIssuerDNPair DN = SubjectIssuerDNPair.of("userDn", "issuerDn");
@@ -61,7 +56,7 @@ public class AuthorizationServiceTest {
     
     private JWTRestTemplate jwtRestTemplate;
     
-    @Before
+    @BeforeEach
     public void setup() {
         cacheManager.getCacheNames().forEach(name -> cacheManager.getCache(name).clear());
         jwtRestTemplate = restTemplateBuilder.build(JWTRestTemplate.class);
@@ -91,21 +86,21 @@ public class AuthorizationServiceTest {
         testAdminMethodSuccess(authUser, "/authorization/v1/admin/listUsersMatching", "substring=ignore");
     }
     
-    private void testAdminMethodFailure(ProxiedUserDetails unauthUser, String path, String query) throws Exception {
+    private void testAdminMethodFailure(ProxiedUserDetails unauthUser, String path, String query) {
         UriComponents uri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path(path).query(query).build();
         try {
             jwtRestTemplate.exchange(unauthUser, HttpMethod.GET, uri, String.class);
             fail("Non-admin request to " + uri + " shouldn't have been allowed.");
         } catch (HttpClientErrorException e) {
             assertEquals(403, e.getRawStatusCode());
-            assertEquals("403 Forbidden", e.getMessage());
+            assertEquals("Forbidden", e.getStatusText());
         }
     }
     
-    private void testAdminMethodSuccess(ProxiedUserDetails authUser, String path, String query) throws Exception {
+    private void testAdminMethodSuccess(ProxiedUserDetails authUser, String path, String query) {
         UriComponents uri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path(path).query(query).build();
         ResponseEntity<String> entity = jwtRestTemplate.exchange(authUser, HttpMethod.GET, uri, String.class);
-        assertEquals("Authorizaed admin request to " + uri + " did not return a 200.", HttpStatus.OK, entity.getStatusCode());
+        assertEquals(HttpStatus.OK, entity.getStatusCode(), "Authorizaed admin request to " + uri + " did not return a 200.");
     }
     
     @ImportAutoConfiguration({RefreshAutoConfiguration.class})
@@ -114,13 +109,14 @@ public class AuthorizationServiceTest {
     @Configuration
     public static class AuthorizationServiceTestConfiguration {
         @Bean
-        public CachedDatawaveUserService cachedDatawaveUserService(CacheManager cacheManager, CacheInspector cacheInspector) {
-            return new TestUserService(cacheManager, cacheInspector);
+        public CachedDatawaveUserService cachedDatawaveUserService() {
+            return new TestUserService();
         }
         
         @Bean
         public HazelcastInstance testHazelcastInstance() {
             Config config = new Config();
+            config.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(false);
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
             return Hazelcast.newHazelcastInstance(config);
         }
@@ -129,21 +125,13 @@ public class AuthorizationServiceTest {
     @EnableCaching
     @CacheConfig(cacheNames = "datawaveUsers-IT")
     private static class TestUserService implements CachedDatawaveUserService {
-        private final CacheManager cacheManager;
-        private final CacheInspector cacheInspector;
-        
-        private TestUserService(CacheManager cacheManager, CacheInspector cacheInspector) {
-            this.cacheManager = cacheManager;
-            this.cacheInspector = cacheInspector;
-        }
-        
         @Override
-        public Collection<DatawaveUser> lookup(Collection<SubjectIssuerDNPair> dns) throws AuthorizationException {
+        public Collection<DatawaveUser> lookup(Collection<SubjectIssuerDNPair> dns) {
             return dns.stream().map(dn -> new DatawaveUser(dn, USER, null, null, null, -1L)).collect(Collectors.toList());
         }
         
         @Override
-        public Collection<DatawaveUser> reload(Collection<SubjectIssuerDNPair> dns) throws AuthorizationException {
+        public Collection<DatawaveUser> reload(Collection<SubjectIssuerDNPair> dns) {
             return null;
         }
         
