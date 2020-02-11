@@ -1,5 +1,7 @@
 ## Authorization Service
 
+[![Apache License][li]][ll] ![Build Status](https://github.com/NationalSecurityAgency/datawave-authorization-service/workflows/Tests/badge.svg)
+
 The Authorization service provides basic authorization for all other datawave
 microservices. Authorization is a single endpoint that returns a signed
 JSON Web Token (JWT) that represents a list of [DatawaveUser](api/src/main/java/datawave/security/authorization/DatawaveUser.java)
@@ -68,3 +70,6 @@ Users must possess the **Administrator** role to access any of the admin methods
 [auth-mock-yml]:https://github.com/NationalSecurityAgency/datawave-microservices-root/blob/master/sample_configuration/authorization-mock.yml
 [testUser]:https://github.com/NationalSecurityAgency/datawave-spring-boot-starter/blob/master/src/main/resources/testUser.p12
 [authorization-dev-yml]:https://github.com/NationalSecurityAgency/datawave-microservices-root/blob/master/sample_configuration/authorization-dev.yml.example
+
+[li]: http://img.shields.io/badge/license-ASL-blue.svg
+[ll]: https://www.apache.org/licenses/LICENSE-2.0
