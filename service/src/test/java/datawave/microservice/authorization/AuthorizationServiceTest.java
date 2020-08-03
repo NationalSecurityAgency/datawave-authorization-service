@@ -28,9 +28,11 @@ import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriComponents;
@@ -44,9 +46,9 @@ import static datawave.security.authorization.DatawaveUser.UserType.USER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-//@Category(IntegrationTest.class)
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles({"AuthorizationServiceTest"})
 public class AuthorizationServiceTest {
     private static final SubjectIssuerDNPair DN = SubjectIssuerDNPair.of("userDn", "issuerDn");
     
@@ -69,7 +71,7 @@ public class AuthorizationServiceTest {
     
     @Test
     public void testAdminMethodSecurity() throws Exception {
-        DatawaveUser unuathDWUser = new DatawaveUser(DN, USER, null, null, null, System.currentTimeMillis());
+        DatawaveUser unuathDWUser = new DatawaveUser(DN, USER, null, null, null, null, System.currentTimeMillis());
         ProxiedUserDetails unuathUser = new ProxiedUserDetails(Collections.singleton(unuathDWUser), unuathDWUser.getCreationTime());
         
         testAdminMethodFailure(unuathUser, "/authorization/v1/admin/evictAll", null);
@@ -80,7 +82,7 @@ public class AuthorizationServiceTest {
         testAdminMethodFailure(unuathUser, "/authorization/v1/admin/listUsersMatching", "substring=ignore");
         
         Collection<String> roles = Collections.singleton("Administrator");
-        DatawaveUser authDWUser = new DatawaveUser(DN, USER, null, roles, null, System.currentTimeMillis());
+        DatawaveUser authDWUser = new DatawaveUser(DN, USER, null, null, roles, null, System.currentTimeMillis());
         ProxiedUserDetails authUser = new ProxiedUserDetails(Collections.singleton(authDWUser), authDWUser.getCreationTime());
         
         testAdminMethodSuccess(authUser, "/authorization/v1/admin/evictAll", null);
@@ -111,6 +113,7 @@ public class AuthorizationServiceTest {
     @ImportAutoConfiguration({RefreshAutoConfiguration.class})
     @AutoConfigureCache(cacheProvider = CacheType.HAZELCAST)
     @ComponentScan(basePackages = "datawave.microservice")
+    @Profile("AuthorizationServiceTest")
     @Configuration
     public static class AuthorizationServiceTestConfiguration {
         @Bean
@@ -139,7 +142,7 @@ public class AuthorizationServiceTest {
         
         @Override
         public Collection<DatawaveUser> lookup(Collection<SubjectIssuerDNPair> dns) throws AuthorizationException {
-            return dns.stream().map(dn -> new DatawaveUser(dn, USER, null, null, null, -1L)).collect(Collectors.toList());
+            return dns.stream().map(dn -> new DatawaveUser(dn, USER, null, null, null, null, -1L)).collect(Collectors.toList());
         }
         
         @Override
