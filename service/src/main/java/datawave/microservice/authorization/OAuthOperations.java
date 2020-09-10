@@ -1,7 +1,5 @@
 package datawave.microservice.authorization;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import datawave.microservice.authorization.oauth.*;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.security.authorization.*;
@@ -12,18 +10,24 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static datawave.security.authorization.OAuthConstants.*;
+
 /**
- * Presents the REST operations for the authorization service.
+ * Presents the REST operations for the authorization service to implement the OAuth2 code flow.
  */
 @RestController
 @RequestMapping(path = "/v1/oauth", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -33,21 +37,16 @@ public class OAuthOperations {
     private final CachedDatawaveUserService cachedDatawaveUserService;
     private final OAuthProperties oAuthProperties;
     
-    private Cache<String,AuthorizationRequest> CACHE;
+    private Cache authCache;
+    private Map<String,Long> authExpirationMap = new ConcurrentHashMap<>();
     
     @Autowired
-    public OAuthOperations(JWTTokenHandler tokenHandler, CachedDatawaveUserService cachedDatawaveUserService, OAuthProperties oAuthProperties) {
+    public OAuthOperations(JWTTokenHandler tokenHandler, CachedDatawaveUserService cachedDatawaveUserService, OAuthProperties oAuthProperties,
+                    CacheManager cacheManager) {
         this.tokenHandler = tokenHandler;
         this.cachedDatawaveUserService = cachedDatawaveUserService;
         this.oAuthProperties = oAuthProperties;
-        long authCodeTtl = this.oAuthProperties.getAuthCodeTtl(TimeUnit.SECONDS);
-        if (authCodeTtl == -1) {
-            throw new IllegalStateException("authCodeTtl not configured.");
-        } else {
-            Caffeine<Object,Object> caffeine = Caffeine.newBuilder();
-            caffeine.expireAfterWrite(authCodeTtl, TimeUnit.SECONDS);
-            CACHE = caffeine.build();
-        }
+        this.authCache = cacheManager.getCache("oauthAuthorizations");
     }
     
     @ApiOperation(value = "Authorizes the calling user to produce a JWT value",
@@ -64,12 +63,12 @@ public class OAuthOperations {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "unauthorized_client (client_id not registered)");
             return;
         }
-        if (!response_type.equalsIgnoreCase("code")) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "invalid_request (response_type must be 'code')");
+        if (!response_type.equalsIgnoreCase(RESPONSE_TYPE_CODE)) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "invalid_request (response_type must be '" + RESPONSE_TYPE_CODE + "')");
             return;
         }
         String code = RandomStringUtils.random(40, true, true);
-        CACHE.put(code, new AuthorizationRequest(currentUser, client, redirect_uri));
+        putAuthorizationRequest(code, new AuthorizationRequest(currentUser, client, redirect_uri));
         StringBuilder builder = new StringBuilder();
         builder.append(redirect_uri);
         builder.append("?");
@@ -100,12 +99,12 @@ public class OAuthOperations {
         }
         
         Collection<SubjectIssuerDNPair> userDnsToLookupAndAdd = new LinkedHashSet<>();
-        if (grant_type.equals("authorization_code")) {
+        if (grant_type.equals(GRANT_AUTHORIZATION_CODE)) {
             if (StringUtils.isBlank(code)) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "invalid_request (must supply code for grant_type authorization_code)");
                 return null;
             }
-            AuthorizationRequest authorizationRequest = CACHE.getIfPresent(code);
+            AuthorizationRequest authorizationRequest = getAuthorizationRequest(code);
             if (authorizationRequest == null) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "invalid_request (requested code not found)");
                 return null;
@@ -116,7 +115,7 @@ public class OAuthOperations {
                 return null;
             }
             // a code can only be used once
-            CACHE.invalidate(code);
+            removeAuthorizationRequest(code);
             if (!redirect_uri.equals(authorizationRequest.getRedirect_uri())) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "invalid_request (redirect_uri must match the value when authorize was called)");
                 return null;
@@ -127,7 +126,7 @@ public class OAuthOperations {
             // Add dn for the DN corresponding to the client that is invoking this call
             // Required for authorization_code path, but not refresh_token path since all DNs will be in refresh token
             currentUser.getProxiedUsers().forEach(u -> userDnsToLookupAndAdd.add(u.getDn()));
-        } else if (grant_type.equals("refresh_token")) {
+        } else if (grant_type.equals(GRANT_REFRESH_TOKEN)) {
             if (StringUtils.isBlank(refresh_token)) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "invalid_request (must provide refresh_token for grant_type refresh_token)");
                 return null;
@@ -199,5 +198,33 @@ public class OAuthOperations {
         List<OAuthUserInfo> users = new ArrayList<>();
         currentUser.getProxiedUsers().forEach(u -> users.add(new OAuthUserInfo(u)));
         return users;
+    }
+    
+    public AuthorizationRequest getAuthorizationRequest(String code) {
+        return this.authCache.get(code, AuthorizationRequest.class);
+    }
+    
+    public void putAuthorizationRequest(String code, AuthorizationRequest authRequest) {
+        this.authCache.put(code, authRequest);
+        this.authExpirationMap.put(code, (System.currentTimeMillis() + this.oAuthProperties.getAuthCodeTtl(TimeUnit.MILLISECONDS)));
+    }
+    
+    public void removeAuthorizationRequest(String code) {
+        this.authCache.evict(code);
+        this.authExpirationMap.remove(code);
+    }
+    
+    @Scheduled(fixedDelay = 1000)
+    public void expireAuthRequests() {
+        if (!authExpirationMap.isEmpty()) {
+            long now = System.currentTimeMillis();
+            synchronized (authExpirationMap) {
+                this.authExpirationMap.entrySet().forEach(e -> {
+                    if (now > e.getValue()) {
+                        this.authCache.evict(e.getKey());
+                    }
+                });
+            }
+        }
     }
 }

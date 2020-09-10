@@ -2,19 +2,29 @@ package datawave.microservice.authorization.oauth;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Component
+@Validated
 @ConfigurationProperties(prefix = "spring.security.datawave.oauth")
 public class OAuthProperties {
     
     private Map<String,AuthorizedClient> authorizedClients = new LinkedHashMap<>();
+    @NotNull
+    @Positive
     private long authCodeTtl = -1;
+    @NotNull
+    @Positive
     private long idTokenTtl = -1;
+    @NotNull
+    @Positive
     private long refreshTokenTtl = -1;
     
     public Map<String,AuthorizedClient> getAuthorizedClients() {
