@@ -200,22 +200,22 @@ public class OAuthOperations {
         return users;
     }
     
-    public AuthorizationRequest getAuthorizationRequest(String code) {
+    private AuthorizationRequest getAuthorizationRequest(String code) {
         return this.authCache.get(code, AuthorizationRequest.class);
     }
     
-    public void putAuthorizationRequest(String code, AuthorizationRequest authRequest) {
+    private void putAuthorizationRequest(String code, AuthorizationRequest authRequest) {
         this.authCache.put(code, authRequest);
         this.authExpirationMap.put(code, (System.currentTimeMillis() + this.oAuthProperties.getAuthCodeTtl(TimeUnit.MILLISECONDS)));
     }
     
-    public void removeAuthorizationRequest(String code) {
+    private void removeAuthorizationRequest(String code) {
         this.authCache.evict(code);
         this.authExpirationMap.remove(code);
     }
     
     @Scheduled(fixedDelay = 1000)
-    public void expireAuthRequests() {
+    private void expireAuthRequests() {
         if (!authExpirationMap.isEmpty()) {
             long now = System.currentTimeMillis();
             synchronized (authExpirationMap) {
