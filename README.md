@@ -24,6 +24,15 @@ administrative rest API to query and manage the cache.
 | `GET`  | authorize | Authorizes the calling user            | N/A          |
 | `GET`  | whoami    | Returns details about the calling user | N/A          |
 
+### OAuth API
+
+| Method | Operation | Description                            | Request Body |
+|:---    |:---       |:---                                    |:---          |
+| `GET`  | authorize | For registered client_id and authorized user, return a short-lived code that can be used by the client to retrieve a user's JWT  | N/A  |
+| `POST` | token     | Using either a code from 'authorize' or a refresh_token, a registered can fetch the corresponding user's JWT                     | N/A  |
+| `GET`  | user      | Returns details about primary current (by token or PKI) user                                                                     | N/A  |
+| `GET`  | users     | Returns details about all current (by token or PKI) proxied users                                                                | N/A  |
+
 
 ### Admin API
 

@@ -8,6 +8,7 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import static datawave.microservice.authorization.mock.MockDatawaveUserService.CACHE_NAME;
@@ -41,13 +42,19 @@ public class MockDatawaveUserLookup {
             userType = UserType.SERVER;
         }
         
-        Map<String,String> rolesToAuths = mockDULProperties.getPerUserRolesToAuths().get(dn.toString());
-        if (rolesToAuths == null) {
+        Map<String,String> rolesToAuths = new TreeMap<>();
+        String userEmail = null;
+        MockDatawaveUser mockDatawaveUser = mockDULProperties.getMockUsers().get(dn.toString());
+        if (mockDatawaveUser != null) {
+            rolesToAuths.putAll(mockDatawaveUser.getRolesToAuths());
+            userEmail = mockDatawaveUser.getEmail();
+        }
+        if (rolesToAuths.isEmpty()) {
             rolesToAuths = mockDULProperties.getGlobalRolesToAuths();
         }
         
         HashMultimap<String,String> mapping = HashMultimap.create();
         rolesToAuths.forEach(mapping::put);
-        return new DatawaveUser(dn, userType, rolesToAuths.values(), rolesToAuths.keySet(), mapping, System.currentTimeMillis());
+        return new DatawaveUser(dn, userType, userEmail, rolesToAuths.values(), rolesToAuths.keySet(), mapping, System.currentTimeMillis());
     }
 }

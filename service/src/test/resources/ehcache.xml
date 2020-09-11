@@ -5,4 +5,9 @@
         maxElementsInMemory="1"
         diskPersistent="false">
     </cache>
+    <cache
+        name="oauthAuthorizations"
+        maxElementsInMemory="10"
+        diskPersistent="false">
+    </cache>
 </ehcache>
