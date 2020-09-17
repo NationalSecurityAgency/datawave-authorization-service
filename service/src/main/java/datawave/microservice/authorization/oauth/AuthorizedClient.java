@@ -1,6 +1,8 @@
 package datawave.microservice.authorization.oauth;
 
-public class AuthorizedClient {
+import java.io.Serializable;
+
+public class AuthorizedClient implements Serializable {
     
     private String client_id;
     private String client_name;

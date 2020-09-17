@@ -2,7 +2,9 @@ package datawave.microservice.authorization.oauth;
 
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 
-public class AuthorizationRequest {
+import java.io.Serializable;
+
+public class AuthorizationRequest implements Serializable {
     
     private ProxiedUserDetails proxiedUserDetails;
     private AuthorizedClient authorizedClient;
