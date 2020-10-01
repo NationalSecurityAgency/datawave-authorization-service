@@ -62,7 +62,7 @@ import static java.util.stream.Collectors.toList;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.main.allow-bean-definition-overriding=true")
 @ActiveProfiles({"OAuthServiceTest"})
-public class OAuthOperationsTest {
+public class OAuthOperationsV2Test {
     private static final SubjectIssuerDNPair DN = SubjectIssuerDNPair.of("userDn", "issuerDn");
     
     @LocalServerPort
@@ -346,7 +346,7 @@ public class OAuthOperationsTest {
             queryParams.put("state", Collections.singletonList(state));
         }
         UriComponents authorizeUri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort)
-                        .path("/authorization/v1/oauth/authorize").queryParams(queryParams).build();
+                        .path("/authorization/v2/oauth/authorize").queryParams(queryParams).build();
         return jwtRestTemplate.exchange(authUser, HttpMethod.GET, authorizeUri, String.class);
     }
     
@@ -372,7 +372,7 @@ public class OAuthOperationsTest {
         if (refresh_token != null) {
             queryParams.put("refresh_token", Collections.singletonList(refresh_token));
         }
-        UriComponents tokenUri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/authorization/v1/oauth/token")
+        UriComponents tokenUri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/authorization/v2/oauth/token")
                         .queryParams(queryParams).build();
         
         return jwtRestTemplate.exchange(authUser, HttpMethod.POST, tokenUri, OAuthTokenResponse.class);
@@ -381,7 +381,7 @@ public class OAuthOperationsTest {
     private ResponseEntity<OAuthUserInfo> user(String token, String claim) {
         Collection<DatawaveUser> dwUsers = jwtTokenHandler.createUsersFromToken(token, claim);
         ProxiedUserDetails authUser = new ProxiedUserDetails(dwUsers, dwUsers.stream().findFirst().get().getCreationTime());
-        UriComponents userUri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/authorization/v1/oauth/user")
+        UriComponents userUri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/authorization/v2/oauth/user")
                         .build();
         return jwtRestTemplate.exchange(authUser, HttpMethod.GET, userUri, OAuthUserInfo.class);
     }
@@ -389,7 +389,7 @@ public class OAuthOperationsTest {
     private ResponseEntity<OAuthUserInfo[]> users(String token, String claim) {
         Collection<DatawaveUser> dwUsers = jwtTokenHandler.createUsersFromToken(token, claim);
         ProxiedUserDetails authUser = new ProxiedUserDetails(dwUsers, dwUsers.stream().findFirst().get().getCreationTime());
-        UriComponents userUri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/authorization/v1/oauth/users")
+        UriComponents userUri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/authorization/v2/oauth/users")
                         .build();
         return jwtRestTemplate.exchange(authUser, HttpMethod.GET, userUri, OAuthUserInfo[].class);
     }
@@ -417,7 +417,7 @@ public class OAuthOperationsTest {
     public static class AuthorizationServiceTestConfiguration {
         @Bean
         public CachedDatawaveUserService oauthCachedDatawaveUserService() {
-            return new TestUserService(OAuthOperationsTest.userMap);
+            return new TestUserService(OAuthOperationsV2Test.userMap);
         }
         
         @Bean

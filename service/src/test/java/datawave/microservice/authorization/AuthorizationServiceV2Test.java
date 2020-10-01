@@ -48,8 +48,8 @@ import static org.junit.Assert.fail;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles({"AuthorizationServiceTest"})
-public class AuthorizationServiceTest {
+@ActiveProfiles({"AuthorizationServiceV2Test"})
+public class AuthorizationServiceV2Test {
     private static final SubjectIssuerDNPair DN = SubjectIssuerDNPair.of("userDn", "issuerDn");
     
     @LocalServerPort
@@ -74,23 +74,23 @@ public class AuthorizationServiceTest {
         DatawaveUser unuathDWUser = new DatawaveUser(DN, USER, null, null, null, null, System.currentTimeMillis());
         ProxiedUserDetails unuathUser = new ProxiedUserDetails(Collections.singleton(unuathDWUser), unuathDWUser.getCreationTime());
         
-        testAdminMethodFailure(unuathUser, "/authorization/v1/admin/evictAll", null);
-        testAdminMethodFailure(unuathUser, "/authorization/v1/admin/evictUser", "username=ignored");
-        testAdminMethodFailure(unuathUser, "/authorization/v1/admin/evictUsersMatching", "substring=ignored");
-        testAdminMethodFailure(unuathUser, "/authorization/v1/admin/listUsers", null);
-        testAdminMethodFailure(unuathUser, "/authorization/v1/admin/listUser", "username=ignored");
-        testAdminMethodFailure(unuathUser, "/authorization/v1/admin/listUsersMatching", "substring=ignore");
+        testAdminMethodFailure(unuathUser, "/authorization/v2/admin/evictAll", null);
+        testAdminMethodFailure(unuathUser, "/authorization/v2/admin/evictUser", "username=ignored");
+        testAdminMethodFailure(unuathUser, "/authorization/v2/admin/evictUsersMatching", "substring=ignored");
+        testAdminMethodFailure(unuathUser, "/authorization/v2/admin/listUsers", null);
+        testAdminMethodFailure(unuathUser, "/authorization/v2/admin/listUser", "username=ignored");
+        testAdminMethodFailure(unuathUser, "/authorization/v2/admin/listUsersMatching", "substring=ignore");
         
         Collection<String> roles = Collections.singleton("Administrator");
         DatawaveUser authDWUser = new DatawaveUser(DN, USER, null, null, roles, null, System.currentTimeMillis());
         ProxiedUserDetails authUser = new ProxiedUserDetails(Collections.singleton(authDWUser), authDWUser.getCreationTime());
         
-        testAdminMethodSuccess(authUser, "/authorization/v1/admin/evictAll", null);
-        testAdminMethodSuccess(authUser, "/authorization/v1/admin/evictUser", "username=ignored");
-        testAdminMethodSuccess(authUser, "/authorization/v1/admin/evictUsersMatching", "substring=ignored");
-        testAdminMethodSuccess(authUser, "/authorization/v1/admin/listUsers", null);
-        testAdminMethodSuccess(authUser, "/authorization/v1/admin/listUser", "username=ignored");
-        testAdminMethodSuccess(authUser, "/authorization/v1/admin/listUsersMatching", "substring=ignore");
+        testAdminMethodSuccess(authUser, "/authorization/v2/admin/evictAll", null);
+        testAdminMethodSuccess(authUser, "/authorization/v2/admin/evictUser", "username=ignored");
+        testAdminMethodSuccess(authUser, "/authorization/v2/admin/evictUsersMatching", "substring=ignored");
+        testAdminMethodSuccess(authUser, "/authorization/v2/admin/listUsers", null);
+        testAdminMethodSuccess(authUser, "/authorization/v2/admin/listUser", "username=ignored");
+        testAdminMethodSuccess(authUser, "/authorization/v2/admin/listUsersMatching", "substring=ignore");
     }
     
     private void testAdminMethodFailure(ProxiedUserDetails unauthUser, String path, String query) throws Exception {
@@ -113,7 +113,7 @@ public class AuthorizationServiceTest {
     @ImportAutoConfiguration({RefreshAutoConfiguration.class})
     @AutoConfigureCache(cacheProvider = CacheType.HAZELCAST)
     @ComponentScan(basePackages = "datawave.microservice")
-    @Profile("AuthorizationServiceTest")
+    @Profile("AuthorizationServiceV2Test")
     @Configuration
     public static class AuthorizationServiceTestConfiguration {
         @Bean
