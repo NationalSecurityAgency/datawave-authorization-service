@@ -4,6 +4,7 @@ import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.DatawaveUserInfo;
+import datawave.security.authorization.DatawaveUserV1;
 import datawave.security.authorization.JWTTokenHandler;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -21,20 +22,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.security.RolesAllowed;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Presents the REST operations for the authorization service.
+ * Presents the REST operations for the authorization service. This version returns a DatawaveUserV1 individually and when encapsulated by a ProxiedUserDetails
+ * to avoid serialization errors in clients that have not been updated
  */
 @RestController
 @RequestMapping(path = "/v1", produces = MediaType.APPLICATION_JSON_VALUE)
-public class AuthorizationOperations {
-    private final JWTTokenHandler tokenHandler;
-    private final CachedDatawaveUserService cachedDatawaveUserService;
-    private final ApplicationContext appCtx;
-    private final BusProperties busProperties;
+public class AuthorizationOperationsV1 {
+    protected final JWTTokenHandler tokenHandler;
+    protected final CachedDatawaveUserService cachedDatawaveUserService;
+    protected final ApplicationContext appCtx;
+    protected final BusProperties busProperties;
     
     @Autowired
-    public AuthorizationOperations(JWTTokenHandler tokenHandler, CachedDatawaveUserService cachedDatawaveUserService, ApplicationContext appCtx,
+    public AuthorizationOperationsV1(JWTTokenHandler tokenHandler, CachedDatawaveUserService cachedDatawaveUserService, ApplicationContext appCtx,
                     BusProperties busProperties) {
         this.tokenHandler = tokenHandler;
         this.cachedDatawaveUserService = cachedDatawaveUserService;
@@ -48,7 +52,8 @@ public class AuthorizationOperations {
                                     + "X-SSL-clientcert-subject/X-SSL-clientcert-issuer).")
     @RequestMapping(path = "/authorize", produces = {MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE}, method = RequestMethod.GET)
     public String user(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
-        return tokenHandler.createTokenFromUsers(currentUser.getUsername(), currentUser.getProxiedUsers());
+        List<DatawaveUser> proxiedUsersV1 = currentUser.getProxiedUsers().stream().map(u -> new DatawaveUserV1(u)).collect(Collectors.toList());
+        return tokenHandler.createTokenFromUsers(currentUser.getUsername(), proxiedUsersV1);
     }
     
     /**
@@ -60,7 +65,8 @@ public class AuthorizationOperations {
                                     + "are also used to determine proxied users to include in the returned details.")
     @RequestMapping(path = "/whoami", method = RequestMethod.GET)
     public ProxiedUserDetails hello(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
-        return currentUser;
+        List<DatawaveUser> proxiedUsersV1 = currentUser.getProxiedUsers().stream().map(u -> new DatawaveUserV1(u)).collect(Collectors.toList());
+        return new ProxiedUserDetails(proxiedUsersV1, currentUser.getCreationTime());
     }
     
     /**
@@ -130,7 +136,8 @@ public class AuthorizationOperations {
     @RolesAllowed({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "/admin/listUser", method = RequestMethod.GET)
     public DatawaveUser listCachedUser(@ApiParam("The username (e.g., subjectDn<issuerDn>) to evict") @RequestParam String username) {
-        return cachedDatawaveUserService.list(username);
+        DatawaveUser user = cachedDatawaveUserService.list(username);
+        return user == null ? null : new DatawaveUserV1(user);
     }
     
     /**

@@ -30,8 +30,8 @@ import static datawave.security.authorization.OAuthConstants.*;
  * Presents the REST operations for the authorization service to implement the OAuth2 code flow.
  */
 @RestController
-@RequestMapping(path = "/v1/oauth", produces = MediaType.APPLICATION_JSON_VALUE)
-public class OAuthOperations {
+@RequestMapping(path = "/v2/oauth", produces = MediaType.APPLICATION_JSON_VALUE)
+public class OAuthOperationsV2 {
     private Logger log = LoggerFactory.getLogger(getClass());
     private final JWTTokenHandler tokenHandler;
     private final CachedDatawaveUserService cachedDatawaveUserService;
@@ -41,7 +41,7 @@ public class OAuthOperations {
     private Map<String,Long> authExpirationMap = new ConcurrentHashMap<>();
     
     @Autowired
-    public OAuthOperations(JWTTokenHandler tokenHandler, CachedDatawaveUserService cachedDatawaveUserService, OAuthProperties oAuthProperties,
+    public OAuthOperationsV2(JWTTokenHandler tokenHandler, CachedDatawaveUserService cachedDatawaveUserService, OAuthProperties oAuthProperties,
                     CacheManager cacheManager) {
         this.tokenHandler = tokenHandler;
         this.cachedDatawaveUserService = cachedDatawaveUserService;
