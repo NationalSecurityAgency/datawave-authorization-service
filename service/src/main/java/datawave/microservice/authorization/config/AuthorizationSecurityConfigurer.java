@@ -3,6 +3,7 @@ package datawave.microservice.authorization.config;
 import datawave.microservice.authorization.jwt.JWTAuthenticationFilter;
 import datawave.microservice.authorization.jwt.JWTAuthenticationProvider;
 import datawave.microservice.authorization.preauth.ProxiedEntityX509Filter;
+import datawave.microservice.config.security.AllowedCallersFilter;
 import datawave.microservice.config.security.JWTSecurityConfigurer;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.cache.annotation.EnableCaching;
@@ -62,5 +63,10 @@ public class AuthorizationSecurityConfigurer extends JWTSecurityConfigurer {
         PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
         provider.setPreAuthenticatedUserDetailsService(authenticationUserDetailsService);
         auth.authenticationProvider(provider);
+    }
+    
+    @Override
+    protected AllowedCallersFilter getAllowedCallersFilter(DatawaveSecurityProperties securityProperties) {
+        return new AuthorizationAllowedCallersFilter(securityProperties);
     }
 }
