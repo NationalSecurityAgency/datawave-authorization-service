@@ -67,6 +67,6 @@ public class AuthorizationSecurityConfigurer extends JWTSecurityConfigurer {
     
     @Override
     protected AllowedCallersFilter getAllowedCallersFilter(DatawaveSecurityProperties securityProperties) {
-        return new AuthorizationAllowedCallersFilter(securityProperties);
+        return new AuthorizationAllowedCallersFilter(securityProperties, getAuthenticationEntryPoint());
     }
 }
