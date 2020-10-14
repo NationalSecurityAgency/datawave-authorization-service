@@ -8,7 +8,7 @@
         <relativePath />
     </parent>
     <artifactId>authorization-service</artifactId>
-    <version>1.8</version>
+    <version>1.9-SNAPSHOT</version>
     <description>DATAWAVE Authorization Microservice</description>
     <url>https://code.nsa.gov/datawave-authorization-service</url>
     <scm>
@@ -18,7 +18,7 @@
     </scm>
     <properties>
         <start-class>datawave.microservice.authorization.AuthorizationService</start-class>
-        <version.authorization-api>1.8</version.authorization-api>
+        <version.authorization-api>1.9-SNAPSHOT</version.authorization-api>
         <version.microservice.hazelcast-client>1.5</version.microservice.hazelcast-client>
         <version.microservice.starter>1.6.4</version.microservice.starter>
     </properties>
