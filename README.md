@@ -11,20 +11,32 @@ behalf of another user or chain of servers leading to a user.
 The Authorization service caches authorized users and also provides an
 administrative rest API to query and manage the cache.
 
-### Root Context
+When the fields 'email' and 'login' were added to DatawaveUser, we created V2 of the authorization and oauth API methods
+to ensure that microservices using the pre-change authorization-api could still deserialize the JSON or JWT serialized DatawaveUser
+when they call the V1 methods.  
+
+### Authorization API V1
 
 *https://host:port/authorization/v1/*
-
----
-
-### Authorization API
 
 | Method | Operation | Description                            | Request Body |
 |:---    |:---       |:---                                    |:---          |
 | `GET`  | authorize | Authorizes the calling user            | N/A          |
 | `GET`  | whoami    | Returns details about the calling user | N/A          |
 
-### OAuth API
+
+### Authorization API V2
+
+*https://host:port/authorization/v2/*
+
+| Method | Operation | Description                            | Request Body |
+|:---    |:---       |:---                                    |:---          |
+| `GET`  | authorize | Authorizes the calling user            | N/A          |
+| `GET`  | whoami    | Returns details about the calling user | N/A          |
+
+### OAuth API V2
+
+*https://host:port/authorization/v2/oauth/*
 
 | Method | Operation | Description                            | Request Body |
 |:---    |:---       |:---                                    |:---          |
