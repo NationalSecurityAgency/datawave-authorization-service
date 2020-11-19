@@ -11,7 +11,9 @@
     </Appenders>
     <Loggers>
         <Root level="info">
-            <AppenderRef ref="Console" level="warn" />
+            <AppenderRef ref="Console" level="debug" />
         </Root>
+        <Logger name="datawave.microservice.config.security.AllowedCallersFilter" level="debug"/>
+        <Logger name="datawave.microservice.authorization.AuthorizationTestUserService" level="debug"/>
     </Loggers>
 </Configuration>

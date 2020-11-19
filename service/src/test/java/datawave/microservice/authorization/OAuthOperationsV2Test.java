@@ -26,8 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -37,7 +35,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -48,7 +45,6 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.net.ssl.SSLContext;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -57,13 +53,13 @@ import java.util.*;
 import static datawave.security.authorization.DatawaveUser.UserType.SERVER;
 import static datawave.security.authorization.DatawaveUser.UserType.USER;
 import static datawave.security.authorization.OAuthConstants.*;
-import static java.util.stream.Collectors.toList;
 
+// OAuthServiceTest profile to configure AuthorizationTestUserService with userMap
+// httpsnotallowedcaller profile to use application-httpsnotallowedcaller.yml to test that allowedCaller not enforced for OAuth
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.main.allow-bean-definition-overriding=true")
-@ActiveProfiles({"OAuthServiceTest"})
+@ActiveProfiles({"OAuthServiceTest", "httpsnotallowedcaller"})
 public class OAuthOperationsV2Test {
-    private static final SubjectIssuerDNPair DN = SubjectIssuerDNPair.of("userDn", "issuerDn");
     
     @LocalServerPort
     private int webServicePort;
@@ -417,7 +413,7 @@ public class OAuthOperationsV2Test {
     public static class AuthorizationServiceTestConfiguration {
         @Bean
         public CachedDatawaveUserService oauthCachedDatawaveUserService() {
-            return new TestUserService(OAuthOperationsV2Test.userMap);
+            return new AuthorizationTestUserService(OAuthOperationsV2Test.userMap, false);
         }
         
         @Bean
@@ -425,57 +421,6 @@ public class OAuthOperationsV2Test {
             Config config = new Config();
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
             return Hazelcast.newHazelcastInstance(config);
-        }
-    }
-    
-    @EnableCaching
-    @CacheConfig(cacheNames = "datawaveUsers-IT")
-    private static class TestUserService implements CachedDatawaveUserService {
-        
-        private Map<SubjectIssuerDNPair,DatawaveUser> userMap;
-        
-        public TestUserService(Map<SubjectIssuerDNPair,DatawaveUser> userMap) {
-            this.userMap = userMap;
-        }
-        
-        @Override
-        public Collection<DatawaveUser> lookup(Collection<SubjectIssuerDNPair> dns) throws AuthorizationException {
-            return dns.stream().map(dn -> this.userMap.get(dn)).collect(toList());
-        }
-        
-        @Override
-        public Collection<DatawaveUser> reload(Collection<SubjectIssuerDNPair> dns) throws AuthorizationException {
-            return null;
-        }
-        
-        @Override
-        public DatawaveUser list(String name) {
-            return null;
-        }
-        
-        @Override
-        public Collection<? extends DatawaveUserInfo> listAll() {
-            return null;
-        }
-        
-        @Override
-        public Collection<? extends DatawaveUserInfo> listMatching(String substring) {
-            return null;
-        }
-        
-        @Override
-        public String evict(String name) {
-            return null;
-        }
-        
-        @Override
-        public String evictMatching(String substring) {
-            return null;
-        }
-        
-        @Override
-        public String evictAll() {
-            return null;
         }
     }
     
@@ -515,12 +460,5 @@ public class OAuthOperationsV2Test {
             // Instead, we could list the expected cert as a property (or use our server cert), and verify that the presented name matches.
             return httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
         }
-    }
-    
-    private static class NoOpResponseErrorHandler extends DefaultResponseErrorHandler {
-        
-        @Override
-        public void handleError(ClientHttpResponse response) throws IOException {}
-        
     }
 }
