@@ -9,6 +9,7 @@ import datawave.security.authorization.DatawaveUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,6 +17,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -50,6 +52,16 @@ public class ProxiedEntityUserDetailsService implements AuthenticationUserDetail
             return null;
         }
         ProxiedEntityPreauthPrincipal principal = (ProxiedEntityPreauthPrincipal) principalObj;
+        
+        if (securityProperties.isEnforceAllowedCallers()) {
+            final Collection<String> allowedCallers = securityProperties.getAllowedCallers();
+            if (!allowedCallers.contains(principal.getCallerPrincipal().toString())) {
+                logger.warn("Not allowing {} to talk since it is not in the allowed list of users {}", principalObj, allowedCallers);
+                throw new BadCredentialsException(principalObj + " is not allowed to call.");
+            }
+        } else {
+            logger.trace("Allowing {} since we're not enforcing allowed callers.", principalObj);
+        }
         
         try {
             List<DatawaveUser> principals = new ArrayList<>(datawaveUserService.lookup(principal.getProxiedEntities()));
