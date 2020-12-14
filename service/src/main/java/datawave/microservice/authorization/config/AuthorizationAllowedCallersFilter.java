@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 public class AuthorizationAllowedCallersFilter extends AllowedCallersFilter {
-    private final Pattern oauthPattern = Pattern.compile("/v\\d*/oauth/.*");
+    private static final Pattern oauthPattern = Pattern.compile("/v\\d*/oauth/.*");
     
     public AuthorizationAllowedCallersFilter(DatawaveSecurityProperties securityProperties, AuthenticationEntryPoint authenticationEntryPoint) {
         super(securityProperties, authenticationEntryPoint);
@@ -21,12 +21,15 @@ public class AuthorizationAllowedCallersFilter extends AllowedCallersFilter {
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain)
                     throws ServletException, IOException {
         
-        String path = httpServletRequest.getServletPath();
-        if (!oauthPattern.matcher(path).matches()) {
+        if (AuthorizationAllowedCallersFilter.enforceAllowedCallersForRequest(httpServletRequest)) {
             super.doFilterInternal(httpServletRequest, httpServletResponse, filterChain);
         } else {
             // Continue the chain to handle any other filters
             filterChain.doFilter(httpServletRequest, httpServletResponse);
         }
+    }
+    
+    public static boolean enforceAllowedCallersForRequest(HttpServletRequest httpServletRequest) {
+        return !oauthPattern.matcher(httpServletRequest.getServletPath()).matches();
     }
 }

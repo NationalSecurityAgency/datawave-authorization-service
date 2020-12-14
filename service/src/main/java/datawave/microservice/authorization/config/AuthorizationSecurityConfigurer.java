@@ -1,8 +1,8 @@
 package datawave.microservice.authorization.config;
 
+import datawave.microservice.authorization.datawave.microservice.authorization.preauth.AuthorizationProxiedEntityX509Filter;
 import datawave.microservice.authorization.jwt.JWTAuthenticationFilter;
 import datawave.microservice.authorization.jwt.JWTAuthenticationProvider;
-import datawave.microservice.authorization.preauth.ProxiedEntityX509Filter;
 import datawave.microservice.config.security.AllowedCallersFilter;
 import datawave.microservice.config.security.JWTSecurityConfigurer;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
@@ -49,7 +49,7 @@ public class AuthorizationSecurityConfigurer extends JWTSecurityConfigurer {
         
         // The parent configures JWT-based security. Add an additional filter here to allow authentication based on the
         // X-ProxiedEntitiesChain/X-ProxiedIssuersChain headers that are supplied by trusted callers.
-        ProxiedEntityX509Filter proxiedX509Filter = new ProxiedEntityX509Filter(securityProperties.isUseTrustedSubjectHeaders(),
+        AuthorizationProxiedEntityX509Filter proxiedX509Filter = new AuthorizationProxiedEntityX509Filter(securityProperties.isUseTrustedSubjectHeaders(),
                         securityProperties.isProxiedEntitiesRequired(), securityProperties.isIssuersRequired(), getAuthenticationEntryPoint());
         proxiedX509Filter.setAuthenticationManager(authenticationManager());
         proxiedX509Filter.setContinueFilterChainOnUnsuccessfulAuthentication(false);

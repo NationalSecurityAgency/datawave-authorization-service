@@ -3,7 +3,11 @@ package datawave.microservice.authorization;
 import datawave.microservice.authorization.preauth.ProxiedEntityX509Filter;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.security.authorization.JWTTokenHandler;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
@@ -88,5 +92,9 @@ public class AuthorizationTestUtils {
             headers.add(ProxiedEntityX509Filter.ISSUER_DN_HEADER, trustedUser.getPrimaryUser().getDn().issuerDN());
         }
         return new RequestEntity(null, headers, method, uri.toUri());
+    }
+    
+    public String getScheme() {
+        return scheme;
     }
 }

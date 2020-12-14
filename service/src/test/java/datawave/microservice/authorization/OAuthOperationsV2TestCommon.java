@@ -3,28 +3,21 @@ package datawave.microservice.authorization;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import datawave.microservice.authorization.jwt.JWTRestTemplate;
-import datawave.security.authorization.OAuthTokenResponse;
-import datawave.security.authorization.OAuthUserInfo;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.microservice.config.web.RestClientProperties;
-import datawave.security.authorization.*;
+import datawave.security.authorization.CachedDatawaveUserService;
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.authorization.JWTTokenHandler;
+import datawave.security.authorization.OAuthTokenResponse;
+import datawave.security.authorization.OAuthUserInfo;
+import datawave.security.authorization.SubjectIssuerDNPair;
 import datawave.security.util.ProxiedEntityUtils;
-import org.apache.http.client.HttpClient;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.cache.CacheType;
 import org.springframework.boot.test.autoconfigure.core.AutoConfigureCache;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -33,14 +26,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.*;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -48,67 +39,72 @@ import javax.net.ssl.SSLContext;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static datawave.security.authorization.DatawaveUser.UserType.SERVER;
 import static datawave.security.authorization.DatawaveUser.UserType.USER;
-import static datawave.security.authorization.OAuthConstants.*;
+import static datawave.security.authorization.OAuthConstants.GRANT_AUTHORIZATION_CODE;
+import static datawave.security.authorization.OAuthConstants.GRANT_REFRESH_TOKEN;
+import static datawave.security.authorization.OAuthConstants.RESPONSE_TYPE_CODE;
 
-// OAuthServiceTest profile to configure AuthorizationTestUserService with userMap
-// httpsnotallowedcaller profile to use application-httpsnotallowedcaller.yml to test that allowedCaller not enforced for OAuth
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.main.allow-bean-definition-overriding=true")
-@ActiveProfiles({"OAuthServiceTest", "httpsnotallowedcaller"})
-public class OAuthOperationsV2Test {
+public class OAuthOperationsV2TestCommon {
     
     @LocalServerPort
-    private int webServicePort;
+    protected int webServicePort;
     
     @Autowired
-    private RestTemplateBuilder restTemplateBuilder;
+    protected RestTemplateBuilder restTemplateBuilder;
     
     @Autowired
-    private JWTTokenHandler jwtTokenHandler;
+    protected JWTTokenHandler jwtTokenHandler;
     
     @Autowired
-    private SSLContext sslContext;
+    protected SSLContext sslContext;
     
     @Autowired
-    private RestClientProperties restClientProperties;
+    protected RestClientProperties restClientProperties;
     
-    private JWTRestTemplate jwtRestTemplate;
+    protected RestTemplate restTemplate;
+    protected AuthorizationTestUtils testUtils;
     
-    private static Map<SubjectIssuerDNPair,DatawaveUser> userMap = new LinkedHashMap<>();
-    private final SubjectIssuerDNPair userDN = SubjectIssuerDNPair.of("cn=Test User, ou=testing, ou=development, o=testcorp, c=us",
+    protected static Map<SubjectIssuerDNPair,DatawaveUser> userMap = new LinkedHashMap<>();
+    protected final SubjectIssuerDNPair userDN = SubjectIssuerDNPair.of("cn=Test User, ou=testing, ou=development, o=testcorp, c=us",
                     "cn=testcorp ca, ou=security, o=testcorp, c=us");
-    private final SubjectIssuerDNPair serverDN = SubjectIssuerDNPair.of("cn=test.testcorp.com, ou=microservices, ou=development, o=testcorp, c=us",
+    protected final SubjectIssuerDNPair notAllowedUserDN = SubjectIssuerDNPair.of(
+                    "cn=notallowedcaller.testcorp.com, ou=microservices, ou=development, o=testcorp, c=us", "cn=testcorp ca, ou=security, o=testcorp, c=us");
+    protected final SubjectIssuerDNPair serverDN = SubjectIssuerDNPair.of("cn=test.testcorp.com, ou=microservices, ou=development, o=testcorp, c=us",
                     "cn=testcorp ca, ou=security, o=testcorp, c=us");
+    
+    public DatawaveUser dwServer = new DatawaveUser(serverDN, SERVER, null, Arrays.asList("A", "B", "C", "D"), Arrays.asList("AuthorizedServer"), null,
+                    System.currentTimeMillis());
+    
+    public DatawaveUser notAllowedDwUser = new DatawaveUser(notAllowedUserDN, USER, null, Arrays.asList("A", "B", "E"), Arrays.asList("AuthorizedUser"), null,
+                    System.currentTimeMillis());
+    
+    public DatawaveUser dwUser = new DatawaveUser(userDN, USER, null, Arrays.asList("A", "B", "E"), Arrays.asList("AuthorizedUser"), null,
+                    System.currentTimeMillis());
+    
     private final String CLIENT_ID = "123456789";
     private final String CLIENT_SECRET = "secret";
     private final String REDIRECT_URI = "https://localhost/redirect";
     
-    @Before
-    public void setup() {
-        userMap.put(userDN,
-                        new DatawaveUser(userDN, USER, null, Arrays.asList("A", "B", "E"), Arrays.asList("AuthorizedUser"), null, System.currentTimeMillis()));
-        userMap.put(serverDN, new DatawaveUser(serverDN, SERVER, null, Arrays.asList("A", "B", "C", "D"), Arrays.asList("AuthorizedServer"), null,
-                        System.currentTimeMillis()));
-        OAuthRestTemplateCustomizer customizer = new OAuthRestTemplateCustomizer(sslContext, restClientProperties);
-        // Disable following redirects
-        restTemplateBuilder = restTemplateBuilder.additionalCustomizers(customizer);
-        jwtRestTemplate = restTemplateBuilder.build(JWTRestTemplate.class);
+    public enum AUTH_TYPE {
+        TRUSTED_HEADER, JWT, NONE
     }
     
-    @Test
-    public void TestCodeFlowValid() throws Exception {
-        DatawaveUser dwUser = userMap.get(userDN);
-        DatawaveUser dwServer = userMap.get(serverDN);
+    public void TestCodeFlowValid(DatawaveUser dwUser, AUTH_TYPE authType) throws Exception {
         
         // Application redirects user's browser to the authorize endpoint (redirect not shown)
         // The user calls authorize with own credentials and gets redirected back to the application
         // This test is set up to not follow the redirect so that we can test the response
         String state = "randomstatestring";
-        ResponseEntity<String> authorizeEntity = authorize(dwUser, RESPONSE_TYPE_CODE, CLIENT_ID, REDIRECT_URI, state);
+        ResponseEntity<String> authorizeEntity = authorize(dwUser, authType, RESPONSE_TYPE_CODE, CLIENT_ID, REDIRECT_URI, state);
         Assert.assertEquals("Expecting a 302 redirect", 302, authorizeEntity.getStatusCode().value());
         List<String> valueList = authorizeEntity.getHeaders().get("Location");
         Assert.assertEquals(1, valueList.size());
@@ -129,10 +125,10 @@ public class OAuthOperationsV2Test {
         ResponseEntity<OAuthTokenResponse> tokenEntity = token(dwServer, GRANT_AUTHORIZATION_CODE, CLIENT_ID, CLIENT_SECRET, code, REDIRECT_URI, null);
         Assert.assertEquals(200, tokenEntity.getStatusCode().value());
         
-        OAuthTokenResponse OAuthTokenResponse = tokenEntity.getBody();
+        OAuthTokenResponse oAuthTokenResponse = tokenEntity.getBody();
         Assert.assertEquals(200, tokenEntity.getStatusCode().value());
         
-        String access_token = OAuthTokenResponse.getAccess_token();
+        String access_token = oAuthTokenResponse.getAccess_token();
         Collection<DatawaveUser> usersFromToken = jwtTokenHandler.createUsersFromToken(access_token);
         // The DatawaveUser of both the user and the server should be in the token
         // The server is proxying for the user and must also be authenticated
@@ -140,12 +136,12 @@ public class OAuthOperationsV2Test {
         
         // Call the user endpoint with the access_token to get the primary user
         ResponseEntity<OAuthUserInfo> userResponse = user(access_token, JWTTokenHandler.PRINCIPALS_CLAIM);
-        OAuthUserInfo OAuthUserInfo = userResponse.getBody();
-        Assert.assertEquals(ProxiedEntityUtils.getCommonName(dwUser.getDn().subjectDN()), OAuthUserInfo.getName());
-        Assert.assertEquals(dwUser.getLogin(), OAuthUserInfo.getLogin());
-        Assert.assertEquals(dwUser.getEmail(), OAuthUserInfo.getEmail());
-        Assert.assertEquals(dwUser.getDn(), OAuthUserInfo.getDn());
-        Assert.assertEquals(dwUser.getCreationTime(), OAuthUserInfo.getCreationTime());
+        OAuthUserInfo oAuthUserInfo = userResponse.getBody();
+        Assert.assertEquals(ProxiedEntityUtils.getCommonName(dwUser.getDn().subjectDN()), oAuthUserInfo.getName());
+        Assert.assertEquals(dwUser.getLogin(), oAuthUserInfo.getLogin());
+        Assert.assertEquals(dwUser.getEmail(), oAuthUserInfo.getEmail());
+        Assert.assertEquals(dwUser.getDn(), oAuthUserInfo.getDn());
+        Assert.assertEquals(dwUser.getCreationTime(), oAuthUserInfo.getCreationTime());
         
         // Call the users endpoint with the access_token to get the all users
         ResponseEntity<OAuthUserInfo[]> usersResponse = users(access_token, JWTTokenHandler.PRINCIPALS_CLAIM);
@@ -154,62 +150,55 @@ public class OAuthOperationsV2Test {
         Assert.assertEquals("Primary and proxying user should be returned", 2, users.length);
         
         // Call the token endpoint with the refresh token id
-        String refresh_token = OAuthTokenResponse.getRefresh_token();
+        String refresh_token = oAuthTokenResponse.getRefresh_token();
         ResponseEntity<OAuthTokenResponse> refreshedTokenEntity = token(dwServer, GRANT_REFRESH_TOKEN, CLIENT_ID, CLIENT_SECRET, null, null, refresh_token);
         Assert.assertEquals(200, refreshedTokenEntity.getStatusCode().value());
     }
     
-    @Test
-    public void TestCodeFlowInvalidClientId() {
-        DatawaveUser dwUser = userMap.get(userDN);
+    public void TestCodeFlowInvalidClientId(DatawaveUser dwUser, AUTH_TYPE authType) {
         
         // Application redirects user's browser to the authorize endpoint (redirect not shown)
         // The user calls authorize with own credentials and gets redirected back to the application
         // This test is set up to not follow the redirect so that we can test the response
         try {
-            authorize(dwUser, RESPONSE_TYPE_CODE, "00000000", REDIRECT_URI, null);
+            authorize(dwUser, authType, RESPONSE_TYPE_CODE, "00000000", REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
             Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
         
         try {
-            token(dwUser, GRANT_AUTHORIZATION_CODE, "00000000", CLIENT_SECRET, "wrongcode", REDIRECT_URI, null);
+            token(dwServer, GRANT_AUTHORIZATION_CODE, "00000000", CLIENT_SECRET, "wrongcode", REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
             Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
     }
     
-    @Test
-    public void TestCodeFlowMissingResponseType() {
-        DatawaveUser dwUser = userMap.get(userDN);
+    public void TestCodeFlowMissingResponseType(DatawaveUser dwUser, AUTH_TYPE authType) {
         
         // Application redirects user's browser to the authorize endpoint (redirect not shown)
         // The user calls authorize with own credentials and gets redirected back to the application
         // This test is set up to not follow the redirect so that we can test the response
         try {
-            authorize(dwUser, null, CLIENT_ID, REDIRECT_URI, null);
+            authorize(dwUser, authType, null, CLIENT_ID, REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
             Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
     }
     
-    @Test
-    public void TestCodeFlowMissingRedirectUri() {
-        DatawaveUser dwUser = userMap.get(userDN);
+    public void TestCodeFlowMissingRedirectUri(DatawaveUser dwUser, AUTH_TYPE authType) {
         
         // Application redirects user's browser to the authorize endpoint (redirect not shown)
         // The user calls authorize with own credentials and gets redirected back to the application
         // This test is set up to not follow the redirect so that we can test the response
         try {
-            authorize(dwUser, RESPONSE_TYPE_CODE, CLIENT_ID, null, null);
+            authorize(dwUser, authType, RESPONSE_TYPE_CODE, CLIENT_ID, null, null);
         } catch (HttpStatusCodeException e) {
             Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
     }
     
-    @Test
     public void TestCodeFlowWrongCode() {
-        DatawaveUser dwServer = userMap.get(serverDN);
+        
         try {
             token(dwServer, GRANT_AUTHORIZATION_CODE, CLIENT_ID, CLIENT_SECRET, "wrongcode", REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
@@ -217,15 +206,12 @@ public class OAuthOperationsV2Test {
         }
     }
     
-    @Test
-    public void TestCodeFlowRightCodeWrongOtherParameters() throws Exception {
-        DatawaveUser dwUser = userMap.get(userDN);
-        DatawaveUser dwServer = userMap.get(serverDN);
+    public void TestCodeFlowRightCodeWrongOtherParameters(DatawaveUser dwUser, AUTH_TYPE authType) throws Exception {
         
         // Application redirects user's browser to the authorize endpoint (redirect not shown)
         // The user calls authorize with own credentials and gets redirected back to the application
         // This test is set up to not follow the redirect so that we can test the response
-        ResponseEntity<String> authorizeEntity = authorize(dwUser, RESPONSE_TYPE_CODE, CLIENT_ID, REDIRECT_URI, null);
+        ResponseEntity<String> authorizeEntity = authorize(dwUser, authType, RESPONSE_TYPE_CODE, CLIENT_ID, REDIRECT_URI, null);
         Assert.assertEquals(302, authorizeEntity.getStatusCode().value());
         List<String> valueList = authorizeEntity.getHeaders().get("Location");
         Assert.assertEquals(1, valueList.size());
@@ -269,15 +255,12 @@ public class OAuthOperationsV2Test {
         }
     }
     
-    @Test
-    public void TestCodeFlowUseCodeTwice() throws Exception {
-        DatawaveUser dwUser = userMap.get(userDN);
-        DatawaveUser dwServer = userMap.get(serverDN);
+    public void TestCodeFlowUseCodeTwice(DatawaveUser dwUser, AUTH_TYPE authType) throws Exception {
         
         // Application redirects user's browser to the authorize endpoint (redirect not shown)
         // The user calls authorize with own credentials and gets redirected back to the application
         // This test is set up to not follow the redirect so that we can test the response
-        ResponseEntity<String> authorizeEntity = authorize(dwUser, RESPONSE_TYPE_CODE, CLIENT_ID, REDIRECT_URI, null);
+        ResponseEntity<String> authorizeEntity = authorize(dwUser, authType, RESPONSE_TYPE_CODE, CLIENT_ID, REDIRECT_URI, null);
         Assert.assertEquals(302, authorizeEntity.getStatusCode().value());
         List<String> valueList = authorizeEntity.getHeaders().get("Location");
         Assert.assertEquals(1, valueList.size());
@@ -326,8 +309,14 @@ public class OAuthOperationsV2Test {
         }
     }
     
-    private ResponseEntity<String> authorize(DatawaveUser user, String response_type, String client_id, String redirect_uri, String state) {
-        ProxiedUserDetails authUser = new ProxiedUserDetails(Collections.singleton(user), user.getCreationTime());
+    private ResponseEntity<String> authorize(DatawaveUser dwUser, AUTH_TYPE authType, String response_type, String client_id, String redirect_uri,
+                    String state) {
+        
+        ProxiedUserDetails trustedHeaderUser = authType.equals(AUTH_TYPE.TRUSTED_HEADER)
+                        ? new ProxiedUserDetails(Collections.singleton(dwUser), dwUser.getCreationTime())
+                        : null;
+        ProxiedUserDetails jwtUser = authType.equals(AUTH_TYPE.JWT) ? new ProxiedUserDetails(Collections.singleton(dwUser), dwUser.getCreationTime()) : null;
+        
         MultiValueMap<String,String> queryParams = new LinkedMultiValueMap<>();
         if (response_type != null) {
             queryParams.put("response_type", Collections.singletonList(response_type));
@@ -341,14 +330,15 @@ public class OAuthOperationsV2Test {
         if (state != null) {
             queryParams.put("state", Collections.singletonList(state));
         }
-        UriComponents authorizeUri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort)
+        UriComponents authorizeUri = UriComponentsBuilder.newInstance().scheme(testUtils.getScheme()).host("localhost").port(webServicePort)
                         .path("/authorization/v2/oauth/authorize").queryParams(queryParams).build();
-        return jwtRestTemplate.exchange(authUser, HttpMethod.GET, authorizeUri, String.class);
+        RequestEntity requestEntity = testUtils.createRequestEntity(trustedHeaderUser, jwtUser, HttpMethod.GET, authorizeUri);
+        return restTemplate.exchange(requestEntity, String.class);
     }
     
-    private ResponseEntity<OAuthTokenResponse> token(DatawaveUser user, String grant_type, String client_id, String client_secret, String code,
+    private ResponseEntity<OAuthTokenResponse> token(DatawaveUser dwServer, String grant_type, String client_id, String client_secret, String code,
                     String redirect_uri, String refresh_token) {
-        ProxiedUserDetails authUser = new ProxiedUserDetails(Collections.singleton(user), user.getCreationTime());
+        ProxiedUserDetails authServer = new ProxiedUserDetails(Collections.singleton(dwServer), dwServer.getCreationTime());
         MultiValueMap<String,String> queryParams = new LinkedMultiValueMap<>();
         if (grant_type != null) {
             queryParams.put("grant_type", Collections.singletonList(grant_type));
@@ -368,26 +358,30 @@ public class OAuthOperationsV2Test {
         if (refresh_token != null) {
             queryParams.put("refresh_token", Collections.singletonList(refresh_token));
         }
-        UriComponents tokenUri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/authorization/v2/oauth/token")
-                        .queryParams(queryParams).build();
+        UriComponents tokenUri = UriComponentsBuilder.newInstance().scheme(testUtils.getScheme()).host("localhost").port(webServicePort)
+                        .path("/authorization/v2/oauth/token").queryParams(queryParams).build();
         
-        return jwtRestTemplate.exchange(authUser, HttpMethod.POST, tokenUri, OAuthTokenResponse.class);
+        // both http and https requests should find the JWT first even if calling with a client certificate
+        RequestEntity requestEntity = testUtils.createRequestEntity(null, authServer, HttpMethod.POST, tokenUri);
+        return restTemplate.exchange(requestEntity, OAuthTokenResponse.class);
     }
     
     private ResponseEntity<OAuthUserInfo> user(String token, String claim) {
         Collection<DatawaveUser> dwUsers = jwtTokenHandler.createUsersFromToken(token, claim);
         ProxiedUserDetails authUser = new ProxiedUserDetails(dwUsers, dwUsers.stream().findFirst().get().getCreationTime());
-        UriComponents userUri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/authorization/v2/oauth/user")
-                        .build();
-        return jwtRestTemplate.exchange(authUser, HttpMethod.GET, userUri, OAuthUserInfo.class);
+        UriComponents userUri = UriComponentsBuilder.newInstance().scheme(testUtils.getScheme()).host("localhost").port(webServicePort)
+                        .path("/authorization/v2/oauth/user").build();
+        RequestEntity requestEntity = testUtils.createRequestEntity(null, authUser, HttpMethod.GET, userUri);
+        return restTemplate.exchange(requestEntity, OAuthUserInfo.class);
     }
     
     private ResponseEntity<OAuthUserInfo[]> users(String token, String claim) {
         Collection<DatawaveUser> dwUsers = jwtTokenHandler.createUsersFromToken(token, claim);
         ProxiedUserDetails authUser = new ProxiedUserDetails(dwUsers, dwUsers.stream().findFirst().get().getCreationTime());
-        UriComponents userUri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/authorization/v2/oauth/users")
-                        .build();
-        return jwtRestTemplate.exchange(authUser, HttpMethod.GET, userUri, OAuthUserInfo[].class);
+        UriComponents userUri = UriComponentsBuilder.newInstance().scheme(testUtils.getScheme()).host("localhost").port(webServicePort)
+                        .path("/authorization/v2/oauth/users").build();
+        RequestEntity requestEntity = testUtils.createRequestEntity(null, authUser, HttpMethod.GET, userUri);
+        return restTemplate.exchange(requestEntity, OAuthUserInfo[].class);
     }
     
     public static Map<String,List<String>> splitQuery(URL url) throws UnsupportedEncodingException {
@@ -413,7 +407,7 @@ public class OAuthOperationsV2Test {
     public static class AuthorizationServiceTestConfiguration {
         @Bean
         public CachedDatawaveUserService oauthCachedDatawaveUserService() {
-            return new AuthorizationTestUserService(OAuthOperationsV2Test.userMap, false);
+            return new AuthorizationTestUserService(OAuthOperationsV2TestCommon.userMap, false);
         }
         
         @Bean
@@ -427,38 +421,38 @@ public class OAuthOperationsV2Test {
     /*
      * Only used for the OAuth tests so that we can ignore redirect responses and check the response values at each step of the OAuth process
      */
-    public class OAuthRestTemplateCustomizer implements RestTemplateCustomizer {
-        
-        private final SSLContext sslContext;
-        private final int maxConnectionsTotal;
-        private final int maxConnectionsPerRoute;
-        
-        public OAuthRestTemplateCustomizer(SSLContext sslContext, RestClientProperties restClientProperties) {
-            this.sslContext = sslContext;
-            this.maxConnectionsTotal = restClientProperties.getMaxConnectionsTotal();
-            this.maxConnectionsPerRoute = restClientProperties.getMaxConnectionsPerRoute();
-        }
-        
-        @Override
-        public void customize(RestTemplate restTemplate) {
-            restTemplate.setRequestFactory(clientHttpRequestFactory());
-        }
-        
-        protected ClientHttpRequestFactory clientHttpRequestFactory() {
-            HttpClient httpClient = customizeHttpClient(HttpClients.custom(), sslContext).build();
-            return new HttpComponentsClientHttpRequestFactory(httpClient);
-        }
-        
-        protected HttpClientBuilder customizeHttpClient(HttpClientBuilder httpClientBuilder, SSLContext sslContext) {
-            if (sslContext != null) {
-                httpClientBuilder.setSSLContext(sslContext);
-            }
-            httpClientBuilder.setMaxConnTotal(maxConnectionsTotal);
-            httpClientBuilder.setMaxConnPerRoute(maxConnectionsPerRoute);
-            httpClientBuilder.disableRedirectHandling();
-            // TODO: We're allowing all hosts, since the cert presented by the service we're calling likely won't match its hostname (e.g., a docker host name)
-            // Instead, we could list the expected cert as a property (or use our server cert), and verify that the presented name matches.
-            return httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
-        }
-    }
+    // public class OAuthRestTemplateCustomizer implements RestTemplateCustomizer {
+    //
+    // private final SSLContext sslContext;
+    // private final int maxConnectionsTotal;
+    // private final int maxConnectionsPerRoute;
+    //
+    // public OAuthRestTemplateCustomizer(SSLContext sslContext, RestClientProperties restClientProperties) {
+    // this.sslContext = sslContext;
+    // this.maxConnectionsTotal = restClientProperties.getMaxConnectionsTotal();
+    // this.maxConnectionsPerRoute = restClientProperties.getMaxConnectionsPerRoute();
+    // }
+    //
+    // @Override
+    // public void customize(RestTemplate restTemplate) {
+    // restTemplate.setRequestFactory(clientHttpRequestFactory());
+    // }
+    //
+    // protected ClientHttpRequestFactory clientHttpRequestFactory() {
+    // HttpClient httpClient = customizeHttpClient(HttpClients.custom(), sslContext).build();
+    // return new HttpComponentsClientHttpRequestFactory(httpClient);
+    // }
+    //
+    // protected HttpClientBuilder customizeHttpClient(HttpClientBuilder httpClientBuilder, SSLContext sslContext) {
+    // if (sslContext != null) {
+    // httpClientBuilder.setSSLContext(sslContext);
+    // }
+    // httpClientBuilder.setMaxConnTotal(maxConnectionsTotal);
+    // httpClientBuilder.setMaxConnPerRoute(maxConnectionsPerRoute);
+    // httpClientBuilder.disableRedirectHandling();
+    // // TODO: We're allowing all hosts, since the cert presented by the service we're calling likely won't match its hostname (e.g., a docker host name)
+    // // Instead, we could list the expected cert as a property (or use our server cert), and verify that the presented name matches.
+    // return httpClientBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
+    // }
+    // }
 }

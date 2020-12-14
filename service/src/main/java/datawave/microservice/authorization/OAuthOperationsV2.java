@@ -1,8 +1,16 @@
 package datawave.microservice.authorization;
 
-import datawave.microservice.authorization.oauth.*;
+import datawave.microservice.authorization.oauth.AuthorizationRequest;
+import datawave.microservice.authorization.oauth.AuthorizedClient;
+import datawave.microservice.authorization.oauth.OAuthProperties;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
-import datawave.security.authorization.*;
+import datawave.security.authorization.AuthorizationException;
+import datawave.security.authorization.CachedDatawaveUserService;
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.authorization.JWTTokenHandler;
+import datawave.security.authorization.OAuthTokenResponse;
+import datawave.security.authorization.OAuthUserInfo;
+import datawave.security.authorization.SubjectIssuerDNPair;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang.RandomStringUtils;
@@ -15,16 +23,27 @@ import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static datawave.security.authorization.OAuthConstants.*;
+import static datawave.security.authorization.OAuthConstants.GRANT_AUTHORIZATION_CODE;
+import static datawave.security.authorization.OAuthConstants.GRANT_REFRESH_TOKEN;
+import static datawave.security.authorization.OAuthConstants.RESPONSE_TYPE_CODE;
 
 /**
  * Presents the REST operations for the authorization service to implement the OAuth2 code flow.
