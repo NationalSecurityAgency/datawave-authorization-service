@@ -1,6 +1,8 @@
 package datawave.microservice.authorization.userdetails;
 
+import datawave.microservice.authorization.config.AuthorizationAllowedCallersFilter;
 import datawave.microservice.authorization.config.DatawaveSecurityProperties;
+import datawave.microservice.authorization.datawave.microservice.authorization.preauth.AuthorizationProxiedEntityPreauthPrincipal;
 import datawave.microservice.authorization.preauth.ProxiedEntityPreauthPrincipal;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.security.authorization.AuthorizationException;
@@ -16,6 +18,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -53,14 +56,22 @@ public class ProxiedEntityUserDetailsService implements AuthenticationUserDetail
         }
         ProxiedEntityPreauthPrincipal principal = (ProxiedEntityPreauthPrincipal) principalObj;
         
-        if (securityProperties.isEnforceAllowedCallers()) {
-            final Collection<String> allowedCallers = securityProperties.getAllowedCallers();
-            if (!allowedCallers.contains(principal.getCallerPrincipal().toString())) {
-                logger.warn("Not allowing {} to talk since it is not in the allowed list of users {}", principalObj, allowedCallers);
-                throw new BadCredentialsException(principalObj + " is not allowed to call.");
+        HttpServletRequest request = null;
+        // principal should be a AuthorizationProxiedEntityPreauthPrincipal so that we can get the httpServletRequest
+        if (principalObj instanceof AuthorizationProxiedEntityPreauthPrincipal) {
+            request = ((AuthorizationProxiedEntityPreauthPrincipal) principalObj).getRequest();
+        }
+        
+        if (request == null || AuthorizationAllowedCallersFilter.enforceAllowedCallersForRequest(request)) {
+            if (securityProperties.isEnforceAllowedCallers()) {
+                final Collection<String> allowedCallers = securityProperties.getAllowedCallers();
+                if (!allowedCallers.contains(principal.getCallerPrincipal().toString())) {
+                    logger.warn("Not allowing {} to talk since it is not in the allowed list of users {}", principalObj, allowedCallers);
+                    throw new BadCredentialsException(principalObj + " is not allowed to call.");
+                }
+            } else {
+                logger.trace("Allowing {} since we're not enforcing allowed callers.", principalObj);
             }
-        } else {
-            logger.trace("Allowing {} since we're not enforcing allowed callers.", principalObj);
         }
         
         try {

@@ -3,15 +3,14 @@ package datawave.microservice.authorization;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import datawave.microservice.authorization.jwt.JWTRestTemplate;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.microservice.cached.CacheInspector;
-import datawave.security.authorization.AuthorizationException;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
-import datawave.security.authorization.DatawaveUserInfo;
+import datawave.security.authorization.JWTTokenHandler;
 import datawave.security.authorization.SubjectIssuerDNPair;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,35 +21,29 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.stream.Collectors;
 
 import static datawave.security.authorization.DatawaveUser.UserType.USER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"AuthorizationServiceV2Test"})
 public class AuthorizationServiceV2Test {
-    private static final SubjectIssuerDNPair DN = SubjectIssuerDNPair.of("userDn", "issuerDn");
+    
+    private static final SubjectIssuerDNPair ALLOWED_ADMIN_CALLER = SubjectIssuerDNPair
+                    .of("cn=test.testcorp.com, ou=microservices, ou=development, o=testcorp, c=us", "cn=testcorp ca, ou=security, o=testcorp, c=us");
+    private static final SubjectIssuerDNPair ALLOWED_NONADMIN_CALLER = SubjectIssuerDNPair
+                    .of("cn=test2.testcorp.com, ou=microservices, ou=development, o=testcorp, c=us", "cn=testcorp ca, ou=security, o=testcorp, c=us");
     
     @LocalServerPort
     private int webServicePort;
@@ -61,53 +54,47 @@ public class AuthorizationServiceV2Test {
     @Autowired
     private CacheManager cacheManager;
     
-    private JWTRestTemplate jwtRestTemplate;
+    @Autowired
+    private JWTTokenHandler jwtTokenHandler;
+    
+    private AuthorizationTestUtils testUtils;
+    
+    private static ProxiedUserDetails allowedAdminCaller;
+    private static ProxiedUserDetails allowedNonAdminCaller;
+    
+    @BeforeClass
+    public static void classSetup() {
+        Collection<String> roles = Collections.singleton("Administrator");
+        DatawaveUser allowedAdminDWUser = new DatawaveUser(ALLOWED_ADMIN_CALLER, USER, null, null, roles, null, System.currentTimeMillis());
+        allowedAdminCaller = new ProxiedUserDetails(Collections.singleton(allowedAdminDWUser), allowedAdminDWUser.getCreationTime());
+        
+        DatawaveUser allowedNonAdminDWUser = new DatawaveUser(ALLOWED_NONADMIN_CALLER, USER, null, null, null, null, System.currentTimeMillis());
+        allowedNonAdminCaller = new ProxiedUserDetails(Collections.singleton(allowedNonAdminDWUser), allowedNonAdminDWUser.getCreationTime());
+    }
     
     @Before
     public void setup() {
         cacheManager.getCacheNames().forEach(name -> cacheManager.getCache(name).clear());
-        jwtRestTemplate = restTemplateBuilder.build(JWTRestTemplate.class);
+        RestTemplate restTemplate = restTemplateBuilder.build(RestTemplate.class);
+        testUtils = new AuthorizationTestUtils(jwtTokenHandler, restTemplate, "https", webServicePort);
     }
     
     @Test
     public void testAdminMethodSecurity() throws Exception {
-        DatawaveUser unuathDWUser = new DatawaveUser(DN, USER, null, null, null, null, System.currentTimeMillis());
-        ProxiedUserDetails unuathUser = new ProxiedUserDetails(Collections.singleton(unuathDWUser), unuathDWUser.getCreationTime());
         
-        testAdminMethodFailure(unuathUser, "/authorization/v2/admin/evictAll", null);
-        testAdminMethodFailure(unuathUser, "/authorization/v2/admin/evictUser", "username=ignored");
-        testAdminMethodFailure(unuathUser, "/authorization/v2/admin/evictUsersMatching", "substring=ignored");
-        testAdminMethodFailure(unuathUser, "/authorization/v2/admin/listUsers", null);
-        testAdminMethodFailure(unuathUser, "/authorization/v2/admin/listUser", "username=ignored");
-        testAdminMethodFailure(unuathUser, "/authorization/v2/admin/listUsersMatching", "substring=ignore");
+        // the call is being authenticated using a JWT of the provided user. The roles are encapsulated in the JWT
+        testUtils.testAdminMethodFailure(allowedNonAdminCaller, "/authorization/v2/admin/evictUser", "username=ignored");
+        testUtils.testAdminMethodFailure(allowedNonAdminCaller, "/authorization/v2/admin/evictUsersMatching", "substring=ignored");
+        testUtils.testAdminMethodFailure(allowedNonAdminCaller, "/authorization/v2/admin/listUsers", null);
+        testUtils.testAdminMethodFailure(allowedNonAdminCaller, "/authorization/v2/admin/listUser", "username=ignored");
+        testUtils.testAdminMethodFailure(allowedNonAdminCaller, "/authorization/v2/admin/listUsersMatching", "substring=ignore");
         
-        Collection<String> roles = Collections.singleton("Administrator");
-        DatawaveUser authDWUser = new DatawaveUser(DN, USER, null, null, roles, null, System.currentTimeMillis());
-        ProxiedUserDetails authUser = new ProxiedUserDetails(Collections.singleton(authDWUser), authDWUser.getCreationTime());
-        
-        testAdminMethodSuccess(authUser, "/authorization/v2/admin/evictAll", null);
-        testAdminMethodSuccess(authUser, "/authorization/v2/admin/evictUser", "username=ignored");
-        testAdminMethodSuccess(authUser, "/authorization/v2/admin/evictUsersMatching", "substring=ignored");
-        testAdminMethodSuccess(authUser, "/authorization/v2/admin/listUsers", null);
-        testAdminMethodSuccess(authUser, "/authorization/v2/admin/listUser", "username=ignored");
-        testAdminMethodSuccess(authUser, "/authorization/v2/admin/listUsersMatching", "substring=ignore");
-    }
-    
-    private void testAdminMethodFailure(ProxiedUserDetails unauthUser, String path, String query) throws Exception {
-        UriComponents uri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path(path).query(query).build();
-        try {
-            jwtRestTemplate.exchange(unauthUser, HttpMethod.GET, uri, String.class);
-            fail("Non-admin request to " + uri + " shouldn't have been allowed.");
-        } catch (HttpClientErrorException e) {
-            assertEquals(403, e.getRawStatusCode());
-            assertEquals("403 Forbidden", e.getMessage());
-        }
-    }
-    
-    private void testAdminMethodSuccess(ProxiedUserDetails authUser, String path, String query) throws Exception {
-        UriComponents uri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path(path).query(query).build();
-        ResponseEntity<String> entity = jwtRestTemplate.exchange(authUser, HttpMethod.GET, uri, String.class);
-        assertEquals("Authorizaed admin request to " + uri + " did not return a 200.", HttpStatus.OK, entity.getStatusCode());
+        testUtils.testAdminMethodSuccess(allowedAdminCaller, "/authorization/v2/admin/evictAll", null);
+        testUtils.testAdminMethodSuccess(allowedAdminCaller, "/authorization/v2/admin/evictUser", "username=ignored");
+        testUtils.testAdminMethodSuccess(allowedAdminCaller, "/authorization/v2/admin/evictUsersMatching", "substring=ignored");
+        testUtils.testAdminMethodSuccess(allowedAdminCaller, "/authorization/v2/admin/listUsers", null);
+        testUtils.testAdminMethodSuccess(allowedAdminCaller, "/authorization/v2/admin/listUser", "username=ignored");
+        testUtils.testAdminMethodSuccess(allowedAdminCaller, "/authorization/v2/admin/listUsersMatching", "substring=ignore");
     }
     
     @ImportAutoConfiguration({RefreshAutoConfiguration.class})
@@ -118,7 +105,7 @@ public class AuthorizationServiceV2Test {
     public static class AuthorizationServiceTestConfiguration {
         @Bean
         public CachedDatawaveUserService cachedDatawaveUserService(CacheManager cacheManager, CacheInspector cacheInspector) {
-            return new TestUserService(cacheManager, cacheInspector);
+            return new AuthorizationTestUserService(Collections.EMPTY_MAP, true);
         }
         
         @Bean
@@ -126,58 +113,6 @@ public class AuthorizationServiceV2Test {
             Config config = new Config();
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
             return Hazelcast.newHazelcastInstance(config);
-        }
-    }
-    
-    @EnableCaching
-    @CacheConfig(cacheNames = "datawaveUsers-IT")
-    private static class TestUserService implements CachedDatawaveUserService {
-        private final CacheManager cacheManager;
-        private final CacheInspector cacheInspector;
-        
-        private TestUserService(CacheManager cacheManager, CacheInspector cacheInspector) {
-            this.cacheManager = cacheManager;
-            this.cacheInspector = cacheInspector;
-        }
-        
-        @Override
-        public Collection<DatawaveUser> lookup(Collection<SubjectIssuerDNPair> dns) throws AuthorizationException {
-            return dns.stream().map(dn -> new DatawaveUser(dn, USER, null, null, null, null, -1L)).collect(Collectors.toList());
-        }
-        
-        @Override
-        public Collection<DatawaveUser> reload(Collection<SubjectIssuerDNPair> dns) throws AuthorizationException {
-            return null;
-        }
-        
-        @Override
-        public DatawaveUser list(String name) {
-            return null;
-        }
-        
-        @Override
-        public Collection<? extends DatawaveUserInfo> listAll() {
-            return null;
-        }
-        
-        @Override
-        public Collection<? extends DatawaveUserInfo> listMatching(String substring) {
-            return null;
-        }
-        
-        @Override
-        public String evict(String name) {
-            return null;
-        }
-        
-        @Override
-        public String evictMatching(String substring) {
-            return null;
-        }
-        
-        @Override
-        public String evictAll() {
-            return null;
         }
     }
 }
