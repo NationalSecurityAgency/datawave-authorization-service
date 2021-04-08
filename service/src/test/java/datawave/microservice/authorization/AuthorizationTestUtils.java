@@ -14,6 +14,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class AuthorizationTestUtils {
@@ -38,7 +39,7 @@ public class AuthorizationTestUtils {
             fail("Non-admin request to " + uri + " shouldn't have been allowed.");
         } catch (HttpClientErrorException e) {
             assertEquals(403, e.getRawStatusCode());
-            assertEquals("403 Forbidden", e.getMessage());
+            assertEquals("403 Forbidden: [<html><head><title>Error</title></head><body>Forbidden</body></html>]", e.getMessage());
         }
     }
     
@@ -63,7 +64,7 @@ public class AuthorizationTestUtils {
             fail("Non-allowed-caller request to " + uri + " shouldn't have been allowed.");
         } catch (HttpClientErrorException e) {
             assertEquals(403, e.getRawStatusCode());
-            assertEquals("403 Forbidden", e.getMessage());
+            assertTrue(e.getMessage().startsWith("403 Forbidden"));
         }
     }
     
