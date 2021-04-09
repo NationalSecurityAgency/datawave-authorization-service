@@ -7,9 +7,18 @@ spring:
     datawave:
       jwt.ttl: 3600
       issuers-required: true
+      enforce-allowed-callers: true
       allowed-callers:
         - "cn=test.testcorp.com, ou=microservices, ou=development, o=testcorp, c=us<cn=testcorp ca, ou=security, o=testcorp, c=us>"
-
+        - "cn=test2.testcorp.com, ou=microservices, ou=development, o=testcorp, c=us<cn=testcorp ca, ou=security, o=testcorp, c=us>"
+      oauth:
+        authCodeTtl: 60
+        idTokenTtl: 86400
+        refreshTokenTtl: 604800
+        authorizedClients:
+          - client_name: localhost
+            client_id: 123456789
+            client_secret: secret
 server:
   port: 0
   non-secure-port: 0
@@ -38,3 +47,5 @@ management:
 logging:
   level:
     datawave.microservice.authorization.cached: DEBUG
+
+hazelcast.client.enabled: false

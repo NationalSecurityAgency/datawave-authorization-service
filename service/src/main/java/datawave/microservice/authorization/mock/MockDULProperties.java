@@ -11,7 +11,7 @@ import java.util.Map;
 public class MockDULProperties {
     private String serverDnRegex;
     private Map<String,String> globalRolesToAuths = new HashMap<>();
-    private Map<String,Map<String,String>> perUserRolesToAuths = new HashMap<>();
+    private Map<String,MockDatawaveUser> mockUsers = new HashMap<>();
     
     public String getServerDnRegex() {
         return serverDnRegex;
@@ -29,11 +29,11 @@ public class MockDULProperties {
         this.globalRolesToAuths = globalRolesToAuths;
     }
     
-    public Map<String,Map<String,String>> getPerUserRolesToAuths() {
-        return perUserRolesToAuths;
+    public void setMockUsers(Map<String,MockDatawaveUser> mockUsers) {
+        this.mockUsers = mockUsers;
     }
     
-    public void setPerUserRolesToAuths(Map<String,Map<String,String>> perUserRolesToAuths) {
-        this.perUserRolesToAuths = perUserRolesToAuths;
+    public Map<String,MockDatawaveUser> getMockUsers() {
+        return mockUsers;
     }
 }

@@ -8,6 +8,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.DefaultJwtBuilder;
+import io.jsonwebtoken.io.SerializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,8 @@ public class JWTTokenHandler {
         RELATIVE_TO_CURRENT_TIME, RELATIVE_TO_CREATION_TIME
     }
     
-    private static final String PRINCIPALS_CLAIM = "principals";
+    public static final String PRINCIPALS_CLAIM = "principals";
+    public static final String REFRESH_TOKEN_CLAIM = "refresh";
     
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
@@ -93,12 +95,7 @@ public class JWTTokenHandler {
         }
     }
     
-    public String createTokenFromUsers(String username, Collection<? extends DatawaveUser> users) {
-        long minCreationTime = users.stream().map(DatawaveUser::getCreationTime).min(Long::compareTo).orElse(System.currentTimeMillis());
-        if (ttlMode == TtlMode.RELATIVE_TO_CURRENT_TIME) {
-            minCreationTime = System.currentTimeMillis();
-        }
-        Date expirationDate = new Date(minCreationTime + jwtTtl);
+    public String createTokenFromUsers(String username, Collection<? extends DatawaveUser> users, String claimName, Date expirationDate) {
         logger.trace("Creating new JWT to expire at {} for users {}", expirationDate, users);
         // @formatter:off
         return new CustomJWTBuilder(objectMapper)
@@ -106,19 +103,32 @@ public class JWTTokenHandler {
                 .setAudience("DATAWAVE")
                 .setIssuer(issuer)
                 .setExpiration(expirationDate)
-                .claim(PRINCIPALS_CLAIM, users)
+                .claim(claimName, users)
                 .signWith(SignatureAlgorithm.RS512, signingKey)
-                .compressWith(CompressionCodecs.GZIP)
+                .compressWith(CompressionCodecs.DEFLATE)
                 .compact();
         // @formatter:on
     }
     
+    public String createTokenFromUsers(String username, Collection<? extends DatawaveUser> users) {
+        long minCreationTime = users.stream().map(DatawaveUser::getCreationTime).min(Long::compareTo).orElse(System.currentTimeMillis());
+        if (ttlMode == TtlMode.RELATIVE_TO_CURRENT_TIME) {
+            minCreationTime = System.currentTimeMillis();
+        }
+        Date expirationDate = new Date(minCreationTime + jwtTtl);
+        return createTokenFromUsers(username, users, PRINCIPALS_CLAIM, expirationDate);
+    }
+    
     public Collection<DatawaveUser> createUsersFromToken(String token) {
+        return createUsersFromToken(token, PRINCIPALS_CLAIM);
+    }
+    
+    public Collection<DatawaveUser> createUsersFromToken(String token, String claimName) {
         logger.trace("Attempting to parse JWT {}", token);
         Jws<Claims> claimsJws = Jwts.parser().setSigningKey(signatureCheckKey).parseClaimsJws(token);
         Claims claims = claimsJws.getBody();
         logger.trace("Resulting claims: {}", claims);
-        List<?> principalsClaim = claims.get(PRINCIPALS_CLAIM, List.class);
+        List<?> principalsClaim = claims.get(claimName, List.class);
         if (principalsClaim == null || principalsClaim.isEmpty()) {
             throw new IllegalArgumentException("JWT for " + claims.getSubject() + " does not contain any proxied principals.");
         }
@@ -133,8 +143,12 @@ public class JWTTokenHandler {
         }
         
         @Override
-        protected byte[] toJson(Object object) throws JsonProcessingException {
-            return objectMapper.writeValueAsBytes(object);
+        protected byte[] toJson(Object object) throws SerializationException {
+            try {
+                return objectMapper.writeValueAsBytes(object);
+            } catch (JsonProcessingException e) {
+                throw new SerializationException(e.getMessage(), e);
+            }
         }
     }
 }
