@@ -28,6 +28,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
+import java.util.UUID;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -78,6 +79,7 @@ public class AuthorizeHttpsAllowedCallerTest {
         @Bean
         public HazelcastInstance testHazelcastInstance() {
             Config config = new Config();
+            config.setClusterName(UUID.randomUUID().toString());
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
             return Hazelcast.newHazelcastInstance(config);
         }

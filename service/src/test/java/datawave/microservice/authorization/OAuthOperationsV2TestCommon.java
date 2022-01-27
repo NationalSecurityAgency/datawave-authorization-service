@@ -47,6 +47,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static datawave.security.authorization.DatawaveUser.UserType.SERVER;
 import static datawave.security.authorization.DatawaveUser.UserType.USER;
@@ -414,6 +415,7 @@ public class OAuthOperationsV2TestCommon {
         @Bean
         public HazelcastInstance testHazelcastInstance() {
             Config config = new Config();
+            config.setClusterName(UUID.randomUUID().toString());
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
             return Hazelcast.newHazelcastInstance(config);
         }

@@ -33,6 +33,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -125,6 +126,7 @@ public class CachingConfigurerTest {
         @Bean
         public HazelcastInstance testHazelcastInstance() {
             Config config = new Config();
+            config.setClusterName(UUID.randomUUID().toString());
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
             return Hazelcast.newHazelcastInstance(config);
         }

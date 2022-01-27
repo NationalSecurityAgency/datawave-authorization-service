@@ -41,6 +41,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.UUID;
 
 import static datawave.security.authorization.DatawaveUser.UserType.USER;
 
@@ -152,6 +153,7 @@ public class AuthorizationServiceV1Test {
         @Bean
         public HazelcastInstance testHazelcastInstance() {
             Config config = new Config();
+            config.setClusterName(UUID.randomUUID().toString());
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
             return Hazelcast.newHazelcastInstance(config);
         }
