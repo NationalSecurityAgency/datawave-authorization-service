@@ -39,7 +39,7 @@ public class AuthorizationTestUtils {
             fail("Non-admin request to " + uri + " shouldn't have been allowed.");
         } catch (HttpClientErrorException e) {
             assertEquals(403, e.getRawStatusCode());
-            assertEquals("403 Forbidden: [<html><head><title>Error</title></head><body>Forbidden</body></html>]", e.getMessage());
+            assertEquals("403 Forbidden: \"<html><head><title>Error</title></head><body>Forbidden</body></html>\"", e.getMessage());
         }
     }
     
