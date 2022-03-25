@@ -1,6 +1,5 @@
 package datawave.microservice.authorization.mock;
 
-import org.apache.accumulo.core.client.mock.MockUser;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 

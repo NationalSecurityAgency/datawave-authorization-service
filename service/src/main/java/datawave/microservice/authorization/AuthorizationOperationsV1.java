@@ -1,13 +1,18 @@
 package datawave.microservice.authorization;
 
+import datawave.microservice.authorization.config.AuthorizationsListSupplier;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.DatawaveUserInfo;
 import datawave.security.authorization.DatawaveUserV1;
 import datawave.security.authorization.JWTTokenHandler;
+import datawave.security.util.DnUtils;
+import datawave.user.AuthorizationsListBase;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.bus.BusProperties;
 import org.springframework.cloud.bus.event.AuthorizationEvictionEvent;
@@ -21,9 +26,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.security.RolesAllowed;
+import java.security.Principal;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
 
 /**
  * Presents the REST operations for the authorization service. This version returns a DatawaveUserV1 individually and when encapsulated by a ProxiedUserDetails
@@ -32,18 +42,23 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping(path = "/v1", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AuthorizationOperationsV1 {
+    private final Logger log = LoggerFactory.getLogger(AuthorizationOperationsV1.class);
+    
     protected final JWTTokenHandler tokenHandler;
     protected final CachedDatawaveUserService cachedDatawaveUserService;
     protected final ApplicationContext appCtx;
     protected final BusProperties busProperties;
     
+    protected final AuthorizationsListSupplier authorizationsListSupplier;
+    
     @Autowired
     public AuthorizationOperationsV1(JWTTokenHandler tokenHandler, CachedDatawaveUserService cachedDatawaveUserService, ApplicationContext appCtx,
-                    BusProperties busProperties) {
+                    BusProperties busProperties, AuthorizationsListSupplier authorizationsListSupplier) {
         this.tokenHandler = tokenHandler;
         this.cachedDatawaveUserService = cachedDatawaveUserService;
         this.appCtx = appCtx;
         this.busProperties = busProperties;
+        this.authorizationsListSupplier = authorizationsListSupplier;
     }
     
     @ApiOperation(value = "Authorizes the calling user to produce a JWT value",
@@ -54,6 +69,31 @@ public class AuthorizationOperationsV1 {
     public String user(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
         List<DatawaveUser> proxiedUsersV1 = currentUser.getProxiedUsers().stream().map(u -> new DatawaveUserV1(u)).collect(Collectors.toList());
         return tokenHandler.createTokenFromUsers(currentUser.getUsername(), proxiedUsersV1);
+    }
+    
+    @ApiOperation(value = "Lists the effective Accumulo user authorizations for the calling user.")
+    @RequestMapping(path = "/listEffectiveAuthorizations", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, PROTOSTUFF_VALUE, MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
+    public AuthorizationsListBase<?> listEffectiveAuthorizations(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
+        final AuthorizationsListBase<?> list = authorizationsListSupplier.get();
+        
+        // Find out who/what called this method
+        String name = DnUtils.getShortName(currentUser.getPrimaryUser().getName());
+        ;
+        
+        // Add the user DN's auths into the authorization list
+        DatawaveUser primaryUser = currentUser.getPrimaryUser();
+        list.setUserAuths(primaryUser.getDn().subjectDN(), primaryUser.getDn().issuerDN(), new HashSet<>(primaryUser.getAuths()));
+        
+        // Now add all entity auth sets into the list
+        currentUser.getProxiedUsers().forEach(u -> list.addAuths(u.getDn().subjectDN(), u.getDn().issuerDN(), new HashSet<>(u.getAuths())));
+        
+        // Add the role to authorization mapping.
+        // NOTE: Currently this is only added for the primary user, which is really all anyone should care about in terms of mucking with
+        // authorizations. When used for queries, all non-primary users have all of their auths included -- there is no downgrading.
+        list.setAuthMapping(currentUser.getPrimaryUser().getRoleToAuthMapping().asMap());
+        log.trace(name + " has authorizations union " + list.getAllAuths());
+        return list;
     }
     
     /**

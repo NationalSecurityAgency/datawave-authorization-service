@@ -1,9 +1,12 @@
 package datawave.microservice.authorization;
 
+import datawave.microservice.authorization.config.AuthorizationsListSupplier;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.JWTTokenHandler;
+import datawave.security.util.DnUtils;
+import datawave.user.AuthorizationsListBase;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.security.RolesAllowed;
+import java.util.HashSet;
+import java.util.function.Supplier;
 
 /**
  * Presents the REST operations for the authorization service. This version returns the updated (V2) DatawaveUser
@@ -27,8 +32,8 @@ public class AuthorizationOperationsV2 extends AuthorizationOperationsV1 {
     
     @Autowired
     public AuthorizationOperationsV2(JWTTokenHandler tokenHandler, CachedDatawaveUserService cachedDatawaveUserService, ApplicationContext appCtx,
-                    BusProperties busProperties) {
-        super(tokenHandler, cachedDatawaveUserService, appCtx, busProperties);
+                    BusProperties busProperties, AuthorizationsListSupplier authorizationsListSupplier) {
+        super(tokenHandler, cachedDatawaveUserService, appCtx, busProperties, authorizationsListSupplier);
     }
     
     @ApiOperation(value = "Authorizes the calling user to produce a JWT value",
