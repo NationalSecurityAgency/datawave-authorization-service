@@ -8,6 +8,7 @@ import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.security.authorization.AuthorizationException;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.DatawaveUserService;
+import datawave.security.authorization.SubjectIssuerDNPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +76,10 @@ public class ProxiedEntityUserDetailsService implements AuthenticationUserDetail
         }
         
         try {
-            List<DatawaveUser> principals = new ArrayList<>(datawaveUserService.lookup(principal.getProxiedEntities()));
+            List<SubjectIssuerDNPair> users = new ArrayList<>();
+            users.add(principal.getCallerPrincipal());
+            users.addAll(principal.getProxiedEntities());
+            List<DatawaveUser> principals = new ArrayList<>(datawaveUserService.lookup(users));
             long createTime = principals.stream().map(DatawaveUser::getCreationTime).min(Long::compareTo).orElse(System.currentTimeMillis());
             return new ProxiedUserDetails(principals, createTime);
         } catch (AuthorizationException e) {

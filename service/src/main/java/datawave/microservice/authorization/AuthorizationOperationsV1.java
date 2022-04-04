@@ -46,27 +46,32 @@ public class AuthorizationOperationsV1 {
         this.busProperties = busProperties;
     }
     
-    @ApiOperation(value = "Authorizes the calling user to produce a JWT value",
-                    notes = "The returned JWT can be passed to other calls in a header. For example: \"Authorization: bearer <JWT value>\".\n"
-                                    + "The user can be determined with from the supplied client certificate or trusted headers ("
-                                    + "X-SSL-clientcert-subject/X-SSL-clientcert-issuer).")
+    // convert DatawaveUser to DatawaveUserV1 and remove final caller if there are any proxied users
+    private ProxiedUserDetails transformUser(ProxiedUserDetails currentUser) {
+        long skipNum = currentUser.getProxiedUsers().size() > 1 ? 1 : 0;
+        List<DatawaveUser> proxiedUsersV1 = currentUser.getProxiedUsers().stream().skip(skipNum).map(u -> new DatawaveUserV1(u)).collect(Collectors.toList());
+        return new ProxiedUserDetails(proxiedUsersV1, currentUser.getCreationTime());
+    }
+    
+    @ApiOperation(value = "Returns a JWT of the current user/proxied user(s)",
+                    notes = "The returned JWT can be passed to other calls in a header. For example: \"Authorization: Bearer <JWT value>\".\n"
+                                    + "The JWT is created from the proxied users if present or from the supplied client certificate "
+                                    + "or trusted headers (X-SSL-clientcert-subject/X-SSL-clientcert-issuer) if there are no proxied users.")
     @RequestMapping(path = "/authorize", produces = {MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE}, method = RequestMethod.GET)
     public String user(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
-        List<DatawaveUser> proxiedUsersV1 = currentUser.getProxiedUsers().stream().map(u -> new DatawaveUserV1(u)).collect(Collectors.toList());
-        return tokenHandler.createTokenFromUsers(currentUser.getUsername(), proxiedUsersV1);
+        ProxiedUserDetails transformedUser = transformUser(currentUser);
+        return tokenHandler.createTokenFromUsers(transformedUser.getUsername(), transformedUser.getProxiedUsers());
     }
     
     /**
      * Returns the {@link ProxiedUserDetails} that represents the authenticated calling user.
      */
-    @ApiOperation(value = "Returns details about the current user/proxied users.",
-                    notes = "The user can be determined with from the supplied client certificate or trusted headers ("
-                                    + "X-SSL-clientcert-subject/X-SSL-clientcert-issuer). Proxied user headers (X-ProxiedEntitiesChain/X-ProxiedIssuersChain) "
-                                    + "are also used to determine proxied users to include in the returned details.")
+    @ApiOperation(value = "Returns details about the current user/proxied user(s).",
+                    notes = "The user(s) can be determined from the proxied user(s) if present or from the supplied client certificate "
+                                    + "or trusted headers (X-SSL-clientcert-subject/X-SSL-clientcert-issuer) if there are no proxied users.")
     @RequestMapping(path = "/whoami", method = RequestMethod.GET)
     public ProxiedUserDetails hello(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
-        List<DatawaveUser> proxiedUsersV1 = currentUser.getProxiedUsers().stream().map(u -> new DatawaveUserV1(u)).collect(Collectors.toList());
-        return new ProxiedUserDetails(proxiedUsersV1, currentUser.getCreationTime());
+        return transformUser(currentUser);
     }
     
     /**
