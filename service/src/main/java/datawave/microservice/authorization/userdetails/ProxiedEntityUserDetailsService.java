@@ -77,8 +77,8 @@ public class ProxiedEntityUserDetailsService implements AuthenticationUserDetail
         
         try {
             List<SubjectIssuerDNPair> users = new ArrayList<>();
-            users.add(principal.getCallerPrincipal());
             users.addAll(principal.getProxiedEntities());
+            users.add(principal.getCallerPrincipal());
             List<DatawaveUser> principals = new ArrayList<>(datawaveUserService.lookup(users));
             long createTime = principals.stream().map(DatawaveUser::getCreationTime).min(Long::compareTo).orElse(System.currentTimeMillis());
             return new ProxiedUserDetails(principals, createTime);

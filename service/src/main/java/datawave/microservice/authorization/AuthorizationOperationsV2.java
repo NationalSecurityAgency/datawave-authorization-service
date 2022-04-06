@@ -32,12 +32,15 @@ public class AuthorizationOperationsV2 extends AuthorizationOperationsV1 {
         super(tokenHandler, cachedDatawaveUserService, appCtx, busProperties);
     }
     
-    // remove final caller if there are any proxied users
-    private ProxiedUserDetails transformUser(ProxiedUserDetails currentUser) {
-        if (currentUser.getProxiedUsers().size() == 1) {
+    // If there are any proxied users, exclude the last caller from the returned ProxiedUserDetails
+    // If there is only one user, return the provided ProxiedUserDetails unchanged
+    private ProxiedUserDetails transformCurrentUser(ProxiedUserDetails currentUser) {
+        int numUsers = currentUser.getProxiedUsers().size();
+        if (numUsers == 1) {
             return currentUser;
         } else {
-            return new ProxiedUserDetails(currentUser.getProxiedUsers().stream().skip(1).collect(Collectors.toList()), currentUser.getCreationTime());
+            return new ProxiedUserDetails(currentUser.getProxiedUsers().stream().limit(numUsers - 1).collect(Collectors.toList()),
+                            currentUser.getCreationTime());
         }
     }
     
@@ -47,7 +50,7 @@ public class AuthorizationOperationsV2 extends AuthorizationOperationsV1 {
                                     + "or trusted headers (X-SSL-clientcert-subject/X-SSL-clientcert-issuer) if there are no proxied users.")
     @RequestMapping(path = "/authorize", produces = {MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE}, method = RequestMethod.GET)
     public String user(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
-        ProxiedUserDetails transformedUser = transformUser(currentUser);
+        ProxiedUserDetails transformedUser = transformCurrentUser(currentUser);
         return tokenHandler.createTokenFromUsers(transformedUser.getUsername(), transformedUser.getProxiedUsers());
     }
     
@@ -59,7 +62,7 @@ public class AuthorizationOperationsV2 extends AuthorizationOperationsV1 {
                                     + "or trusted headers (X-SSL-clientcert-subject/X-SSL-clientcert-issuer) if there are no proxied users.")
     @RequestMapping(path = "/whoami", method = RequestMethod.GET)
     public ProxiedUserDetails hello(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
-        return transformUser(currentUser);
+        return transformCurrentUser(currentUser);
     }
     
     /**

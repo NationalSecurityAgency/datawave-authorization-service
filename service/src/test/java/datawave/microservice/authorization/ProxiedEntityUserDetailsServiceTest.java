@@ -61,12 +61,12 @@ public class ProxiedEntityUserDetailsServiceTest {
         AuthorizationProxiedEntityPreauthPrincipal principal = new AuthorizationProxiedEntityPreauthPrincipal(CALLER, proxiedEntities, null);
         PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(principal, null);
         ProxiedUserDetails proxiedUserDetails = (ProxiedUserDetails) userDetailsService.loadUserDetails(token);
-        // ProxiedEntityUserDetailsService should return a ProxiedUserDetails with the caller and all proxied users
+        // ProxiedEntityUserDetailsService should return a ProxiedUserDetails with all proxied users and the caller
         Assert.assertEquals(4, proxiedUserDetails.getProxiedUsers().size());
-        Assert.assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
-        Assert.assertEquals(USER_1, proxiedUserDetails.getProxiedUsers().stream().skip(1).findFirst().get().getDn());
-        Assert.assertEquals(USER_2, proxiedUserDetails.getProxiedUsers().stream().skip(2).findFirst().get().getDn());
-        Assert.assertEquals(USER_3, proxiedUserDetails.getProxiedUsers().stream().skip(3).findFirst().get().getDn());
+        Assert.assertEquals(USER_1, proxiedUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
+        Assert.assertEquals(USER_2, proxiedUserDetails.getProxiedUsers().stream().skip(1).findFirst().get().getDn());
+        Assert.assertEquals(USER_3, proxiedUserDetails.getProxiedUsers().stream().skip(2).findFirst().get().getDn());
+        Assert.assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().skip(3).findFirst().get().getDn());
     }
     
     @Test
@@ -88,10 +88,10 @@ public class ProxiedEntityUserDetailsServiceTest {
         AuthorizationProxiedEntityPreauthPrincipal principal = new AuthorizationProxiedEntityPreauthPrincipal(CALLER, proxiedEntities, null);
         PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(principal, null);
         ProxiedUserDetails proxiedUserDetails = (ProxiedUserDetails) userDetailsService.loadUserDetails(token);
-        // ProxiedEntityUserDetailsService should return a ProxiedUserDetails with the caller and all proxied users
+        // ProxiedEntityUserDetailsService should return a ProxiedUserDetails with all proxied users and the caller
         Assert.assertEquals(3, proxiedUserDetails.getProxiedUsers().size());
-        Assert.assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
-        Assert.assertEquals(USER_1, proxiedUserDetails.getProxiedUsers().stream().skip(1).findFirst().get().getDn());
+        Assert.assertEquals(USER_1, proxiedUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
+        Assert.assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().skip(1).findFirst().get().getDn());
         Assert.assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().skip(2).findFirst().get().getDn());
     }
     
