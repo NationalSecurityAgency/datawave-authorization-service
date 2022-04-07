@@ -150,7 +150,7 @@ public class OAuthOperationsV2 {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "invalid_request (must provide refresh_token for grant_type refresh_token)");
                 return null;
             }
-            // Get the userDns from the princpals that were encoded in the resresh_token
+            // Get the userDns from the principals that were encoded in the refresh_token
             List<DatawaveUser> usersInRefreshToken = new ArrayList<>();
             try {
                 usersInRefreshToken.addAll(tokenHandler.createUsersFromToken(refresh_token, JWTTokenHandler.REFRESH_TOKEN_CLAIM));
