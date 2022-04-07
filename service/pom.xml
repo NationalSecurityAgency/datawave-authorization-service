@@ -22,6 +22,7 @@
         <version.authorization-api>1.13-SNAPSHOT</version.authorization-api>
         <version.microservice.hazelcast-client>1.6</version.microservice.hazelcast-client>
         <version.microservice.starter>1.6.7</version.microservice.starter>
+        <version.zookeeper>3.4.14</version.zookeeper>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -39,6 +40,11 @@
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>spring-boot-starter-datawave</artifactId>
                 <version>${version.microservice.starter}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.zookeeper</groupId>
+                <artifactId>zookeeper</artifactId>
+                <version>${version.zookeeper}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
