@@ -8,7 +8,7 @@
         <relativePath />
     </parent>
     <artifactId>authorization-service</artifactId>
-    <version>1.13</version>
+    <version>1.14-SNAPSHOT</version>
     <description>DATAWAVE Authorization Microservice</description>
     <url>https://code.nsa.gov/datawave-authorization-service</url>
     <scm>
