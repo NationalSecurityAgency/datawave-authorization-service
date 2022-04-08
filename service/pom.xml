@@ -40,17 +40,6 @@
                 <artifactId>spring-boot-starter-datawave</artifactId>
                 <version>${version.microservice.starter}</version>
             </dependency>
-            <dependency>
-                <groupId>gov.nsa.datawave.services</groupId>
-                <artifactId>datawave-services-common-util</artifactId>
-                <version>${version.datawave}</version>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>*</artifactId>
-                        <groupId>*</groupId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -65,10 +54,6 @@
         <dependency>
             <groupId>gov.nsa.datawave.microservice</groupId>
             <artifactId>spring-boot-starter-datawave</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>gov.nsa.datawave.services</groupId>
-            <artifactId>datawave-services-common-util</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

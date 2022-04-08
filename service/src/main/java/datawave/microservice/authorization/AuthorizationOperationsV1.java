@@ -2,12 +2,12 @@ package datawave.microservice.authorization;
 
 import datawave.microservice.authorization.config.AuthorizationsListSupplier;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.security.util.DnUtils;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.DatawaveUserInfo;
 import datawave.security.authorization.DatawaveUserV1;
 import datawave.security.authorization.JWTTokenHandler;
-import datawave.security.util.DnUtils;
 import datawave.user.AuthorizationsListBase;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -26,11 +26,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.security.RolesAllowed;
-import java.security.Principal;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
@@ -51,14 +49,17 @@ public class AuthorizationOperationsV1 {
     
     protected final AuthorizationsListSupplier authorizationsListSupplier;
     
+    protected final DnUtils dnUtils;
+    
     @Autowired
     public AuthorizationOperationsV1(JWTTokenHandler tokenHandler, CachedDatawaveUserService cachedDatawaveUserService, ApplicationContext appCtx,
-                    BusProperties busProperties, AuthorizationsListSupplier authorizationsListSupplier) {
+                    BusProperties busProperties, AuthorizationsListSupplier authorizationsListSupplier, DnUtils dnUtils) {
         this.tokenHandler = tokenHandler;
         this.cachedDatawaveUserService = cachedDatawaveUserService;
         this.appCtx = appCtx;
         this.busProperties = busProperties;
         this.authorizationsListSupplier = authorizationsListSupplier;
+        this.dnUtils = dnUtils;
     }
     
     @ApiOperation(value = "Authorizes the calling user to produce a JWT value",
@@ -78,7 +79,7 @@ public class AuthorizationOperationsV1 {
         final AuthorizationsListBase<?> list = authorizationsListSupplier.get();
         
         // Find out who/what called this method
-        String name = DnUtils.getShortName(currentUser.getPrimaryUser().getName());
+        String name = dnUtils.getShortName(currentUser.getPrimaryUser().getName());
         
         // Add the user DN's auths into the authorization list
         DatawaveUser primaryUser = currentUser.getPrimaryUser();

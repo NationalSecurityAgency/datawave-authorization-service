@@ -49,3 +49,9 @@ logging:
     datawave.microservice.authorization.cached: DEBUG
 
 hazelcast.client.enabled: false
+
+datawave:
+  security:
+    util:
+      subjectDnPattern: "(?:^|,)\\s*OU\\s*=\\s*My Department\\s*(?:,|$)"
+      npeOuList: "iamnotaperson,npe,stillnotaperson"
