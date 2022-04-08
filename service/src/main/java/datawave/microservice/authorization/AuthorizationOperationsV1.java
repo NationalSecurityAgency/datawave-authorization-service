@@ -79,7 +79,6 @@ public class AuthorizationOperationsV1 {
         
         // Find out who/what called this method
         String name = DnUtils.getShortName(currentUser.getPrimaryUser().getName());
-        ;
         
         // Add the user DN's auths into the authorization list
         DatawaveUser primaryUser = currentUser.getPrimaryUser();
