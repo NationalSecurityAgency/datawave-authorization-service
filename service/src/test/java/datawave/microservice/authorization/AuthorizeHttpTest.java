@@ -40,7 +40,7 @@ import java.util.Collections;
 import java.util.UUID;
 
 import static datawave.security.authorization.DatawaveUser.UserType.USER;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -136,7 +136,7 @@ public class AuthorizeHttpTest {
                         .build();
         RequestEntity requestEntity = testUtils.createRequestEntity(notAllowedCaller, allowedCaller, HttpMethod.GET, uri);
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        assertEquals("Authorized request to " + uri + " did not return a 200.", HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode(), "Authorized request to " + uri + " did not return a 200.");
     }
     
     @ImportAutoConfiguration({RefreshAutoConfiguration.class})
