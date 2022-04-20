@@ -13,9 +13,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class AuthorizationTestUtils {
     
@@ -47,7 +47,7 @@ public class AuthorizationTestUtils {
         UriComponents uri = UriComponentsBuilder.newInstance().scheme(scheme).host("localhost").port(webServicePort).path(path).query(query).build();
         RequestEntity requestEntity = createRequestEntity(null, authUser, HttpMethod.GET, uri);
         ResponseEntity<String> entity = restTemplate.exchange(requestEntity, String.class);
-        assertEquals("Authorizaed admin request to " + uri + " did not return a 200.", HttpStatus.OK, entity.getStatusCode());
+        assertEquals(HttpStatus.OK, entity.getStatusCode(), "Authorizaed admin request to " + uri + " did not return a 200.");
     }
     
     public void testAuthorizeMethodFailure(ProxiedUserDetails unauthUser, String path, boolean useTrustedHeader, boolean useJWT) throws Exception {
@@ -78,7 +78,7 @@ public class AuthorizationTestUtils {
             requestEntity = createRequestEntity(trustedHeaderUser, null, HttpMethod.GET, uri);
         }
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        assertEquals("Authorized request to " + uri + " did not return a 200.", HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode(), "Authorized request to " + uri + " did not return a 200.");
     }
     
     public <T> RequestEntity<T> createRequestEntity(ProxiedUserDetails trustedUser, ProxiedUserDetails jwtUser, HttpMethod method, UriComponents uri) {

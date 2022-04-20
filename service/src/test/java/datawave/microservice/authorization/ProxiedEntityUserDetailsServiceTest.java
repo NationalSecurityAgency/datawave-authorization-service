@@ -8,10 +8,8 @@ import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.microservice.authorization.userdetails.ProxiedEntityUserDetailsService;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.SubjectIssuerDNPair;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.cache.CacheType;
@@ -25,13 +23,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@RunWith(SpringRunner.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"ProxiedEntityUserDetailsServiceTest"})
 public class ProxiedEntityUserDetailsServiceTest {
@@ -48,11 +48,6 @@ public class ProxiedEntityUserDetailsServiceTest {
     @Autowired
     private ProxiedEntityUserDetailsService userDetailsService;
     
-    @Before
-    public void setup() {
-        
-    }
-    
     @Test
     public void withProxiedUsers() {
         List<SubjectIssuerDNPair> proxiedEntities = new ArrayList<>();
@@ -63,11 +58,11 @@ public class ProxiedEntityUserDetailsServiceTest {
         PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(principal, null);
         ProxiedUserDetails proxiedUserDetails = (ProxiedUserDetails) userDetailsService.loadUserDetails(token);
         // ProxiedEntityUserDetailsService should return a ProxiedUserDetails with all proxied users and the caller
-        Assert.assertEquals(4, proxiedUserDetails.getProxiedUsers().size());
-        Assert.assertEquals(USER_1, proxiedUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
-        Assert.assertEquals(USER_2, proxiedUserDetails.getProxiedUsers().stream().skip(1).findFirst().get().getDn());
-        Assert.assertEquals(USER_3, proxiedUserDetails.getProxiedUsers().stream().skip(2).findFirst().get().getDn());
-        Assert.assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().skip(3).findFirst().get().getDn());
+        assertEquals(4, proxiedUserDetails.getProxiedUsers().size());
+        assertEquals(USER_1, proxiedUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
+        assertEquals(USER_2, proxiedUserDetails.getProxiedUsers().stream().skip(1).findFirst().get().getDn());
+        assertEquals(USER_3, proxiedUserDetails.getProxiedUsers().stream().skip(2).findFirst().get().getDn());
+        assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().skip(3).findFirst().get().getDn());
     }
     
     @Test
@@ -77,8 +72,8 @@ public class ProxiedEntityUserDetailsServiceTest {
         PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(principal, null);
         ProxiedUserDetails proxiedUserDetails = (ProxiedUserDetails) userDetailsService.loadUserDetails(token);
         // ProxiedEntityUserDetailsService should return a ProxiedUserDetails with only the caller
-        Assert.assertEquals(1, proxiedUserDetails.getProxiedUsers().size());
-        Assert.assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
+        assertEquals(1, proxiedUserDetails.getProxiedUsers().size());
+        assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
     }
     
     @Test
@@ -90,10 +85,10 @@ public class ProxiedEntityUserDetailsServiceTest {
         PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(principal, null);
         ProxiedUserDetails proxiedUserDetails = (ProxiedUserDetails) userDetailsService.loadUserDetails(token);
         // ProxiedEntityUserDetailsService should return a ProxiedUserDetails with all proxied users and the caller
-        Assert.assertEquals(3, proxiedUserDetails.getProxiedUsers().size());
-        Assert.assertEquals(USER_1, proxiedUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
-        Assert.assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().skip(1).findFirst().get().getDn());
-        Assert.assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().skip(2).findFirst().get().getDn());
+        assertEquals(3, proxiedUserDetails.getProxiedUsers().size());
+        assertEquals(USER_1, proxiedUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
+        assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().skip(1).findFirst().get().getDn());
+        assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().skip(2).findFirst().get().getDn());
     }
     
     @ImportAutoConfiguration({RefreshAutoConfiguration.class})

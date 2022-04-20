@@ -6,9 +6,9 @@ import com.hazelcast.core.HazelcastInstance;
 import datawave.microservice.cached.CacheInspector;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.JWTTokenHandler;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.cache.CacheType;
@@ -24,13 +24,13 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.UUID;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"AuthorizeHttpsNotAllowedCallerTest", "httpsnotallowedcaller"})
 public class AuthorizeHttpsNotAllowedCallerTest {
@@ -51,7 +51,7 @@ public class AuthorizeHttpsNotAllowedCallerTest {
     
     private RestTemplate restTemplate;
     
-    @Before
+    @BeforeEach
     public void setup() {
         cacheManager.getCacheNames().forEach(name -> cacheManager.getCache(name).clear());
         restTemplate = restTemplateBuilder.build(RestTemplate.class);

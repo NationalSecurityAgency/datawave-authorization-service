@@ -9,10 +9,10 @@ import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.JWTTokenHandler;
 import datawave.security.authorization.SubjectIssuerDNPair;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.cache.CacheType;
@@ -28,7 +28,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collection;
@@ -37,7 +37,7 @@ import java.util.UUID;
 
 import static datawave.security.authorization.DatawaveUser.UserType.USER;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"AuthorizationServiceV2Test"})
 public class AuthorizationServiceV2Test {
@@ -64,7 +64,7 @@ public class AuthorizationServiceV2Test {
     private static ProxiedUserDetails allowedAdminCaller;
     private static ProxiedUserDetails allowedNonAdminCaller;
     
-    @BeforeClass
+    @BeforeAll
     public static void classSetup() {
         Collection<String> roles = Collections.singleton("Administrator");
         DatawaveUser allowedAdminDWUser = new DatawaveUser(ALLOWED_ADMIN_CALLER, USER, null, null, roles, null, System.currentTimeMillis());
@@ -74,7 +74,7 @@ public class AuthorizationServiceV2Test {
         allowedNonAdminCaller = new ProxiedUserDetails(Collections.singleton(allowedNonAdminDWUser), allowedNonAdminDWUser.getCreationTime());
     }
     
-    @Before
+    @BeforeEach
     public void setup() {
         cacheManager.getCacheNames().forEach(name -> cacheManager.getCache(name).clear());
         RestTemplate restTemplate = restTemplateBuilder.build(RestTemplate.class);
