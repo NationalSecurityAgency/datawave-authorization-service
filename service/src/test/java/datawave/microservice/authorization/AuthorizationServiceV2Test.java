@@ -119,7 +119,7 @@ public class AuthorizationServiceV2Test {
         }
         
         @Bean
-        public BusProperties pusProperties() {
+        public BusProperties busProperties() {
             return new BusProperties();
         }
     }
