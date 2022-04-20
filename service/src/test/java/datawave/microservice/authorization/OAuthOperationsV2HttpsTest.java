@@ -5,27 +5,27 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLContext;
 
 // OAuthServiceTest profile to configure AuthorizationTestUserService with userMap
 // http profile to use application-http.yml to test that allowedCaller not enforced for OAuth
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.main.allow-bean-definition-overriding=true")
 @ActiveProfiles({"OAuthServiceTest", "httpsnotallowedcaller"})
 public class OAuthOperationsV2HttpsTest extends OAuthOperationsV2TestCommon {
     
-    @Before
+    @BeforeEach
     public void setup() {
         // notAllowedDwServer is the subject of the client cert used in this test
         // notAllowedDwServer is not on the allowedCaller list

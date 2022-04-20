@@ -12,7 +12,7 @@ import datawave.security.authorization.OAuthTokenResponse;
 import datawave.security.authorization.OAuthUserInfo;
 import datawave.security.authorization.SubjectIssuerDNPair;
 import datawave.security.util.ProxiedEntityUtils;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.cache.CacheType;
@@ -107,17 +107,17 @@ public class OAuthOperationsV2TestCommon {
         // This test is set up to not follow the redirect so that we can test the response
         String state = "randomstatestring";
         ResponseEntity<String> authorizeEntity = authorize(dwUser, authType, RESPONSE_TYPE_CODE, CLIENT_ID, REDIRECT_URI, state);
-        Assert.assertEquals("Expecting a 302 redirect", 302, authorizeEntity.getStatusCode().value());
+        Assertions.assertEquals(302, authorizeEntity.getStatusCode().value(), "Expecting a 302 redirect");
         List<String> valueList = authorizeEntity.getHeaders().get("Location");
-        Assert.assertEquals(1, valueList.size());
-        Assert.assertTrue("Redirect location should start with redirect_uri", valueList.get(0).startsWith(REDIRECT_URI));
+        Assertions.assertEquals(1, valueList.size());
+        Assertions.assertTrue(valueList.get(0).startsWith(REDIRECT_URI), "Redirect location should start with redirect_uri");
         
         Map<String,List<String>> queryParams = splitQuery(new URL(valueList.get(0)));
         List<String> stateList = queryParams.get("state");
-        Assert.assertEquals(1, stateList.size());
-        Assert.assertEquals("If state parameter is send, it should be returned", state, stateList.get(0));
+        Assertions.assertEquals(1, stateList.size());
+        Assertions.assertEquals(state, stateList.get(0), "If state parameter is send, it should be returned");
         List<String> codeList = queryParams.get("code");
-        Assert.assertEquals(1, codeList.size());
+        Assertions.assertEquals(1, codeList.size());
         
         // This is the short-lived code that an application needs to get a user's token
         String code = codeList.get(0);
@@ -125,36 +125,36 @@ public class OAuthOperationsV2TestCommon {
         // After the user's browser gets redirected to the application, the application now has the code
         // and can call the token endpoint to get this user's token
         ResponseEntity<OAuthTokenResponse> tokenEntity = token(dwServer, GRANT_AUTHORIZATION_CODE, CLIENT_ID, CLIENT_SECRET, code, REDIRECT_URI, null);
-        Assert.assertEquals(200, tokenEntity.getStatusCode().value());
+        Assertions.assertEquals(200, tokenEntity.getStatusCode().value());
         
         OAuthTokenResponse oAuthTokenResponse = tokenEntity.getBody();
-        Assert.assertEquals(200, tokenEntity.getStatusCode().value());
+        Assertions.assertEquals(200, tokenEntity.getStatusCode().value());
         
         String access_token = oAuthTokenResponse.getAccess_token();
         Collection<DatawaveUser> usersFromToken = jwtTokenHandler.createUsersFromToken(access_token);
         // The DatawaveUser of both the user and the server should be in the token
         // The server is proxying for the user and must also be authenticated
-        Assert.assertEquals(2, usersFromToken.size());
+        Assertions.assertEquals(2, usersFromToken.size());
         
         // Call the user endpoint with the access_token to get the primary user
         ResponseEntity<OAuthUserInfo> userResponse = user(access_token, JWTTokenHandler.PRINCIPALS_CLAIM);
         OAuthUserInfo oAuthUserInfo = userResponse.getBody();
-        Assert.assertEquals(ProxiedEntityUtils.getCommonName(dwUser.getDn().subjectDN()), oAuthUserInfo.getName());
-        Assert.assertEquals(dwUser.getLogin(), oAuthUserInfo.getLogin());
-        Assert.assertEquals(dwUser.getEmail(), oAuthUserInfo.getEmail());
-        Assert.assertEquals(dwUser.getDn(), oAuthUserInfo.getDn());
-        Assert.assertEquals(dwUser.getCreationTime(), oAuthUserInfo.getCreationTime());
+        Assertions.assertEquals(ProxiedEntityUtils.getCommonName(dwUser.getDn().subjectDN()), oAuthUserInfo.getName());
+        Assertions.assertEquals(dwUser.getLogin(), oAuthUserInfo.getLogin());
+        Assertions.assertEquals(dwUser.getEmail(), oAuthUserInfo.getEmail());
+        Assertions.assertEquals(dwUser.getDn(), oAuthUserInfo.getDn());
+        Assertions.assertEquals(dwUser.getCreationTime(), oAuthUserInfo.getCreationTime());
         
         // Call the users endpoint with the access_token to get the all users
         ResponseEntity<OAuthUserInfo[]> usersResponse = users(access_token, JWTTokenHandler.PRINCIPALS_CLAIM);
         OAuthUserInfo[] users = usersResponse.getBody();
-        Assert.assertNotNull(users);
-        Assert.assertEquals("Primary and proxying user should be returned", 2, users.length);
+        Assertions.assertNotNull(users);
+        Assertions.assertEquals(2, users.length, "Primary and proxying user should be returned");
         
         // Call the token endpoint with the refresh token id
         String refresh_token = oAuthTokenResponse.getRefresh_token();
         ResponseEntity<OAuthTokenResponse> refreshedTokenEntity = token(dwServer, GRANT_REFRESH_TOKEN, CLIENT_ID, CLIENT_SECRET, null, null, refresh_token);
-        Assert.assertEquals(200, refreshedTokenEntity.getStatusCode().value());
+        Assertions.assertEquals(200, refreshedTokenEntity.getStatusCode().value());
     }
     
     public void TestCodeFlowInvalidClientId(DatawaveUser dwUser, AUTH_TYPE authType) {
@@ -165,13 +165,13 @@ public class OAuthOperationsV2TestCommon {
         try {
             authorize(dwUser, authType, RESPONSE_TYPE_CODE, "00000000", REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
         
         try {
             token(dwServer, GRANT_AUTHORIZATION_CODE, "00000000", CLIENT_SECRET, "wrongcode", REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
     }
     
@@ -183,7 +183,7 @@ public class OAuthOperationsV2TestCommon {
         try {
             authorize(dwUser, authType, null, CLIENT_ID, REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
     }
     
@@ -195,7 +195,7 @@ public class OAuthOperationsV2TestCommon {
         try {
             authorize(dwUser, authType, RESPONSE_TYPE_CODE, CLIENT_ID, null, null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
     }
     
@@ -204,7 +204,7 @@ public class OAuthOperationsV2TestCommon {
         try {
             token(dwServer, GRANT_AUTHORIZATION_CODE, CLIENT_ID, CLIENT_SECRET, "wrongcode", REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
     }
     
@@ -214,14 +214,14 @@ public class OAuthOperationsV2TestCommon {
         // The user calls authorize with own credentials and gets redirected back to the application
         // This test is set up to not follow the redirect so that we can test the response
         ResponseEntity<String> authorizeEntity = authorize(dwUser, authType, RESPONSE_TYPE_CODE, CLIENT_ID, REDIRECT_URI, null);
-        Assert.assertEquals(302, authorizeEntity.getStatusCode().value());
+        Assertions.assertEquals(302, authorizeEntity.getStatusCode().value());
         List<String> valueList = authorizeEntity.getHeaders().get("Location");
-        Assert.assertEquals(1, valueList.size());
-        Assert.assertTrue(valueList.get(0).startsWith(REDIRECT_URI));
+        Assertions.assertEquals(1, valueList.size());
+        Assertions.assertTrue(valueList.get(0).startsWith(REDIRECT_URI));
         
         Map<String,List<String>> queryParams = splitQuery(new URL(valueList.get(0)));
         List<String> codeList = queryParams.get("code");
-        Assert.assertEquals(1, codeList.size());
+        Assertions.assertEquals(1, codeList.size());
         
         // This is the short-lived code that an application needs to get a user's token
         String code = codeList.get(0);
@@ -229,31 +229,31 @@ public class OAuthOperationsV2TestCommon {
         try {
             token(dwServer, "invalid_grant_type", CLIENT_ID, CLIENT_SECRET, code, REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
         
         try {
             token(dwServer, GRANT_AUTHORIZATION_CODE, "invalidClientId", CLIENT_SECRET, code, REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
         
         try {
             token(dwServer, GRANT_AUTHORIZATION_CODE, CLIENT_ID, CLIENT_SECRET, code, REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
         
         try {
             token(dwServer, GRANT_AUTHORIZATION_CODE, CLIENT_ID, "wrongsecret", code, REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
         
         try {
             token(dwServer, GRANT_AUTHORIZATION_CODE, CLIENT_ID, CLIENT_SECRET, code, "https://different_redirect", null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
     }
     
@@ -263,14 +263,14 @@ public class OAuthOperationsV2TestCommon {
         // The user calls authorize with own credentials and gets redirected back to the application
         // This test is set up to not follow the redirect so that we can test the response
         ResponseEntity<String> authorizeEntity = authorize(dwUser, authType, RESPONSE_TYPE_CODE, CLIENT_ID, REDIRECT_URI, null);
-        Assert.assertEquals(302, authorizeEntity.getStatusCode().value());
+        Assertions.assertEquals(302, authorizeEntity.getStatusCode().value());
         List<String> valueList = authorizeEntity.getHeaders().get("Location");
-        Assert.assertEquals(1, valueList.size());
-        Assert.assertTrue(valueList.get(0).startsWith(REDIRECT_URI));
+        Assertions.assertEquals(1, valueList.size());
+        Assertions.assertTrue(valueList.get(0).startsWith(REDIRECT_URI));
         
         Map<String,List<String>> queryParams = splitQuery(new URL(valueList.get(0)));
         List<String> codeList = queryParams.get("code");
-        Assert.assertEquals(1, codeList.size());
+        Assertions.assertEquals(1, codeList.size());
         
         // This is the short-lived code that an application needs to get a user's token
         String code = codeList.get(0);
@@ -278,36 +278,36 @@ public class OAuthOperationsV2TestCommon {
         // After the user's browser gets redirected to the application, the application now has the code
         // and can call the token endpoint to get this user's token
         ResponseEntity<OAuthTokenResponse> tokenEntity = token(dwServer, GRANT_AUTHORIZATION_CODE, CLIENT_ID, CLIENT_SECRET, code, REDIRECT_URI, null);
-        Assert.assertEquals(200, tokenEntity.getStatusCode().value());
+        Assertions.assertEquals(200, tokenEntity.getStatusCode().value());
         
         try {
             token(dwServer, GRANT_AUTHORIZATION_CODE, CLIENT_ID, CLIENT_SECRET, code, REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals("Code should only be valid for one call", HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode(), "Code should only be valid for one call");
         }
         
         try {
             token(dwServer, GRANT_AUTHORIZATION_CODE, "invalidClientId", CLIENT_SECRET, code, REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
         
         try {
             token(dwServer, GRANT_AUTHORIZATION_CODE, CLIENT_ID, CLIENT_SECRET, code, REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
         
         try {
             token(dwServer, GRANT_AUTHORIZATION_CODE, CLIENT_ID, "wrongsecret", code, REDIRECT_URI, null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
         
         try {
             token(dwServer, GRANT_AUTHORIZATION_CODE, CLIENT_ID, CLIENT_SECRET, code, "https://different_redirect", null);
         } catch (HttpStatusCodeException e) {
-            Assert.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
     }
     
