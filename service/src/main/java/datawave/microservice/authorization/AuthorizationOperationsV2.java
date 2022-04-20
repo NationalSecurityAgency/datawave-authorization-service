@@ -12,13 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.bus.BusProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.annotation.security.RolesAllowed;
 
 /**
  * Presents the REST operations for the authorization service. This version returns the updated (V2) DatawaveUser
@@ -65,7 +64,7 @@ public class AuthorizationOperationsV2 extends AuthorizationOperationsV1 {
      * @see CachedDatawaveUserService#list(String)
      */
     @ApiOperation("Lists the details for the named cached user.")
-    @RolesAllowed({"Administrator", "JBossAdministrator"})
+    @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "/admin/listUser", method = RequestMethod.GET)
     public DatawaveUser listCachedUser(@ApiParam("The username (e.g., subjectDn<issuerDn>) to evict") @RequestParam String username) {
         return cachedDatawaveUserService.list(username);
