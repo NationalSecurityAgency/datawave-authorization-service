@@ -19,13 +19,13 @@ import org.springframework.cloud.bus.event.AuthorizationEvictionEvent;
 import org.springframework.cloud.bus.event.AuthorizationEvictionEvent.Type;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.security.RolesAllowed;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -128,7 +128,7 @@ public class AuthorizationOperationsV1 {
      * @see CachedDatawaveUserService#evict(String)
      */
     @ApiOperation("Evicts the named user from the authorization cache.")
-    @RolesAllowed({"Administrator", "JBossAdministrator"})
+    @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "/admin/evictUser", produces = {MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE},
                     method = {RequestMethod.GET, RequestMethod.DELETE})
     public String evictUser(@ApiParam("The username (e.g., subjectDn<issuerDn>) to evict") @RequestParam String username) {
@@ -145,7 +145,7 @@ public class AuthorizationOperationsV1 {
      * @see CachedDatawaveUserService#evictMatching(String)
      */
     @ApiOperation("Evicts from the authorization cache all users whose name contains the supplied substring.")
-    @RolesAllowed({"Administrator", "JBossAdministrator"})
+    @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "/admin/evictUsersMatching", produces = {MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE},
                     method = {RequestMethod.GET, RequestMethod.DELETE})
     public String evictUsersMatching(@ApiParam("A substring to search for in user names to evict") @RequestParam String substring) {
@@ -162,7 +162,7 @@ public class AuthorizationOperationsV1 {
      * @see CachedDatawaveUserService#evictAll()
      */
     @ApiOperation("Evicts all users from the authorization cache.")
-    @RolesAllowed({"Administrator", "JBossAdministrator"})
+    @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "/admin/evictAll", produces = {MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE},
                     method = {RequestMethod.GET, RequestMethod.DELETE})
     public String evictAll() {
@@ -181,7 +181,7 @@ public class AuthorizationOperationsV1 {
      * @see CachedDatawaveUserService#list(String)
      */
     @ApiOperation("Lists the details for the named cached user.")
-    @RolesAllowed({"Administrator", "JBossAdministrator"})
+    @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "/admin/listUser", method = RequestMethod.GET)
     public DatawaveUser listCachedUser(@ApiParam("The username (e.g., subjectDn<issuerDn>) to evict") @RequestParam String username) {
         DatawaveUser user = cachedDatawaveUserService.list(username);
@@ -199,7 +199,7 @@ public class AuthorizationOperationsV1 {
      * @see CachedDatawaveUserService#listMatching(String)
      */
     @ApiOperation(value = "Retrieves details for all cached users whose names match a substring.")
-    @RolesAllowed({"Administrator", "JBossAdministrator"})
+    @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "/admin/listUsersMatching", method = RequestMethod.GET)
     public Collection<? extends DatawaveUserInfo> listCachedUsersMatching(
                     @ApiParam("A substring to search for in user names to list") @RequestParam String substring) {
@@ -215,7 +215,7 @@ public class AuthorizationOperationsV1 {
      * @see CachedDatawaveUserService#listAll()
      */
     @ApiOperation(value = "Retrieves details for all cached users.")
-    @RolesAllowed({"Administrator", "JBossAdministrator"})
+    @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "/admin/listUsers", method = RequestMethod.GET)
     public Collection<? extends DatawaveUserInfo> listCachedUsers() {
         return cachedDatawaveUserService.listAll();
