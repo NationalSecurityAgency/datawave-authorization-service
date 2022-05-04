@@ -2,6 +2,8 @@ package datawave.security.authorization;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.CompressionCodecs;
 import io.jsonwebtoken.Jws;
@@ -86,6 +88,18 @@ public class JWTTokenHandler {
         this.ttlMode = ttlMode;
         this.jwtTtl = jwtTtlUnit.toMillis(jwtTtl);
         this.objectMapper = objectMapper;
+        
+        // Unfortunately, non-spring classes from Datawave ( via a test in datawave-ws-security) use this constructor, so we need to make sure that the
+        // objectmapper has
+        // all the required modules. If only spring managed objects call this in the future, we can get rid of this since the objectMapper will have been
+        // configured via spring's WebConfig
+        if (!this.objectMapper.getRegisteredModuleIds().contains(new JaxbAnnotationModule().getTypeId())) {
+            objectMapper.registerModule(new JaxbAnnotationModule());
+        }
+        if (!this.objectMapper.getRegisteredModuleIds().contains(new GuavaModule().getTypeId())) {
+            objectMapper.registerModule(new GuavaModule());
+        }
+        
         if (cert instanceof X509Certificate) {
             issuer = ((X509Certificate) cert).getSubjectDN().getName();
             signatureCheckKey = cert.getPublicKey();
