@@ -12,7 +12,7 @@ import datawave.security.authorization.OAuthTokenResponse;
 import datawave.security.authorization.OAuthUserInfo;
 import datawave.security.authorization.SubjectIssuerDNPair;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -68,8 +68,8 @@ public class OAuthOperationsV2 {
         this.authCache = cacheManager.getCache("oauthAuthorizations");
     }
     
-    @ApiOperation(value = "Authorizes the calling user to produce a JWT value",
-                    notes = "The returned JWT can be passed to other calls in a header. For example: \"Authorization: bearer <JWT value>\".\n"
+    @Operation(summary = "Authorizes the calling user to produce a JWT value",
+                    description = "The returned JWT can be passed to other calls in a header. For example: \"Authorization: bearer <JWT value>\".\n"
                                     + "The user can be determined with from the supplied client certificate or trusted headers ("
                                     + "X-SSL-clientcert-subject/X-SSL-clientcert-issuer).")
     @RequestMapping(path = "/authorize", method = RequestMethod.GET)
@@ -98,8 +98,8 @@ public class OAuthOperationsV2 {
         response.sendRedirect(builder.toString());
     }
     
-    @ApiOperation(value = "Authorizes the calling user to produce a JWT value",
-                    notes = "The returned JWT can be passed to other calls in a header. For example: \"Authorization: bearer <JWT value>\".\n"
+    @Operation(summary = "Authorizes the calling user to produce a JWT value",
+                    description = "The returned JWT can be passed to other calls in a header. For example: \"Authorization: bearer <JWT value>\".\n"
                                     + "The user can be determined with from the supplied client certificate or trusted headers ("
                                     + "X-SSL-clientcert-subject/X-SSL-clientcert-issuer).")
     @RequestMapping(path = "/token", method = RequestMethod.POST)
@@ -194,8 +194,8 @@ public class OAuthOperationsV2 {
     /**
      * Returns the {@link ProxiedUserDetails} that represents the authenticated calling user.
      */
-    @ApiOperation(value = "Returns details about the current primary user.",
-                    notes = "The user can be determined from the supplied client certificate, trusted headers ("
+    @Operation(summary = "Returns details about the current primary user.",
+                    description = "The user can be determined from the supplied client certificate, trusted headers ("
                                     + "X-SSL-clientcert-subject/X-SSL-clientcert-issuer), or Authorization Bearer JWT."
                                     + "Proxied user headers (X-ProxiedEntitiesChain/X-ProxiedIssuersChain) "
                                     + "are also used to determine proxied users to include in the returned details.")
@@ -207,8 +207,8 @@ public class OAuthOperationsV2 {
     /**
      * Returns the {@link ProxiedUserDetails} that represents the authenticated calling user.
      */
-    @ApiOperation(value = "Returns details about the current user/proxied users.",
-                    notes = "The user can be determined from the supplied client certificate, trusted headers ("
+    @Operation(summary = "Returns details about the current user/proxied users.",
+                    description = "The user can be determined from the supplied client certificate, trusted headers ("
                                     + "X-SSL-clientcert-subject/X-SSL-clientcert-issuer), or Authorization Bearer JWT."
                                     + "Proxied user headers (X-ProxiedEntitiesChain/X-ProxiedIssuersChain) "
                                     + "are also used to determine proxied users to include in the returned details.")

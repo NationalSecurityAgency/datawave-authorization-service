@@ -6,8 +6,8 @@ import datawave.microservice.security.util.DnUtils;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.JWTTokenHandler;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.bus.BusProperties;
 import org.springframework.context.ApplicationContext;
@@ -46,8 +46,8 @@ public class AuthorizationOperationsV2 extends AuthorizationOperationsV1 {
         }
     }
     
-    @ApiOperation(value = "Returns a JWT of the current user/proxied user(s)",
-                    notes = "The returned JWT can be passed to other calls in a header. For example: \"Authorization: Bearer <JWT value>\".\n"
+    @Operation(summary = "Returns a JWT of the current user/proxied user(s)",
+                    description = "The returned JWT can be passed to other calls in a header. For example: \"Authorization: Bearer <JWT value>\".\n"
                                     + "The JWT is created from the proxied users if present or from the supplied client certificate "
                                     + "or trusted headers (X-SSL-clientcert-subject/X-SSL-clientcert-issuer) if there are no proxied users.")
     @RequestMapping(path = "/authorize", produces = {MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE}, method = RequestMethod.GET)
@@ -59,8 +59,8 @@ public class AuthorizationOperationsV2 extends AuthorizationOperationsV1 {
     /**
      * Returns the {@link ProxiedUserDetails} that represents the authenticated calling user.
      */
-    @ApiOperation(value = "Returns details about the current user/proxied user(s).",
-                    notes = "The user(s) can be determined from the proxied user(s) if present or from the supplied client certificate "
+    @Operation(summary = "Returns details about the current user/proxied user(s).",
+                    description = "The user(s) can be determined from the proxied user(s) if present or from the supplied client certificate "
                                     + "or trusted headers (X-SSL-clientcert-subject/X-SSL-clientcert-issuer) if there are no proxied users.")
     @RequestMapping(path = "/whoami", method = RequestMethod.GET)
     public ProxiedUserDetails hello(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
@@ -77,10 +77,10 @@ public class AuthorizationOperationsV2 extends AuthorizationOperationsV1 {
      * @return the cached user whose {@link DatawaveUser#getName()} is name, or null if no such user is cached
      * @see CachedDatawaveUserService#list(String)
      */
-    @ApiOperation("Lists the details for the named cached user.")
+    @Operation(summary = "Lists the details for the named cached user.")
     @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "/admin/listUser", method = RequestMethod.GET)
-    public DatawaveUser listCachedUser(@ApiParam("The username (e.g., subjectDn<issuerDn>) to evict") @RequestParam String username) {
+    public DatawaveUser listCachedUser(@Parameter(description = "The username (e.g., subjectDn<issuerDn>) to evict") @RequestParam String username) {
         return cachedDatawaveUserService.list(username);
     }
 }
