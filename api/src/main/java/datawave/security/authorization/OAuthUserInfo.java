@@ -2,16 +2,9 @@ package datawave.security.authorization;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import datawave.security.authorization.DatawaveUser;
-import datawave.security.authorization.SubjectIssuerDNPair;
-import datawave.security.util.ProxiedEntityUtils;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
 
 // Purpose of this class is to override the name field in DatawaveUser
 // to use the commonName instead of the subjectDN/issuerDN
