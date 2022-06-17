@@ -12,7 +12,6 @@ import datawave.security.authorization.OAuthTokenResponse;
 import datawave.security.authorization.OAuthUserInfo;
 import datawave.security.authorization.SubjectIssuerDNPair;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.swagger.v3.oas.annotations.Operation;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -20,13 +19,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -48,8 +44,7 @@ import static datawave.security.authorization.OAuthConstants.RESPONSE_TYPE_CODE;
 /**
  * Presents the REST operations for the authorization service to implement the OAuth2 code flow.
  */
-@RestController
-@RequestMapping(path = "/v2/oauth", produces = MediaType.APPLICATION_JSON_VALUE)
+@Service
 public class OAuthOperationsV2 {
     private Logger log = LoggerFactory.getLogger(getClass());
     private final JWTTokenHandler tokenHandler;
@@ -68,11 +63,6 @@ public class OAuthOperationsV2 {
         this.authCache = cacheManager.getCache("oauthAuthorizations");
     }
     
-    @Operation(summary = "Authorizes the calling user to produce a JWT value",
-                    description = "The returned JWT can be passed to other calls in a header. For example: \"Authorization: bearer <JWT value>\".\n"
-                                    + "The user can be determined with from the supplied client certificate or trusted headers ("
-                                    + "X-SSL-clientcert-subject/X-SSL-clientcert-issuer).")
-    @RequestMapping(path = "/authorize", method = RequestMethod.GET)
     public void authorize(@AuthenticationPrincipal ProxiedUserDetails currentUser, HttpServletResponse response, @RequestParam String client_id,
                     @RequestParam String redirect_uri, @RequestParam String response_type, @RequestParam(required = false) String state)
                     throws IllegalArgumentException, IOException {
@@ -98,11 +88,6 @@ public class OAuthOperationsV2 {
         response.sendRedirect(builder.toString());
     }
     
-    @Operation(summary = "Authorizes the calling user to produce a JWT value",
-                    description = "The returned JWT can be passed to other calls in a header. For example: \"Authorization: bearer <JWT value>\".\n"
-                                    + "The user can be determined with from the supplied client certificate or trusted headers ("
-                                    + "X-SSL-clientcert-subject/X-SSL-clientcert-issuer).")
-    @RequestMapping(path = "/token", method = RequestMethod.POST)
     public OAuthTokenResponse token(@AuthenticationPrincipal ProxiedUserDetails currentUser, HttpServletResponse response, @RequestParam String grant_type,
                     @RequestParam String client_id, @RequestParam String client_secret, @RequestParam(required = false) String code,
                     @RequestParam(required = false) String refresh_token, @RequestParam(required = false) String redirect_uri) throws IOException {
@@ -194,12 +179,6 @@ public class OAuthOperationsV2 {
     /**
      * Returns the {@link ProxiedUserDetails} that represents the authenticated calling user.
      */
-    @Operation(summary = "Returns details about the current primary user.",
-                    description = "The user can be determined from the supplied client certificate, trusted headers ("
-                                    + "X-SSL-clientcert-subject/X-SSL-clientcert-issuer), or Authorization Bearer JWT."
-                                    + "Proxied user headers (X-ProxiedEntitiesChain/X-ProxiedIssuersChain) "
-                                    + "are also used to determine proxied users to include in the returned details.")
-    @RequestMapping(path = "/user", method = RequestMethod.GET)
     public OAuthUserInfo user(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
         return new OAuthUserInfo(currentUser.getPrimaryUser());
     }
@@ -207,12 +186,6 @@ public class OAuthOperationsV2 {
     /**
      * Returns the {@link ProxiedUserDetails} that represents the authenticated calling user.
      */
-    @Operation(summary = "Returns details about the current user/proxied users.",
-                    description = "The user can be determined from the supplied client certificate, trusted headers ("
-                                    + "X-SSL-clientcert-subject/X-SSL-clientcert-issuer), or Authorization Bearer JWT."
-                                    + "Proxied user headers (X-ProxiedEntitiesChain/X-ProxiedIssuersChain) "
-                                    + "are also used to determine proxied users to include in the returned details.")
-    @RequestMapping(path = "/users", method = RequestMethod.GET)
     public Collection<OAuthUserInfo> users(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
         List<OAuthUserInfo> users = new ArrayList<>();
         currentUser.getProxiedUsers().forEach(u -> users.add(new OAuthUserInfo(u)));
