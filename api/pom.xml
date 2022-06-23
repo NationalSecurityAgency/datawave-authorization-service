@@ -8,7 +8,7 @@
         <relativePath />
     </parent>
     <artifactId>authorization-api</artifactId>
-    <version>1.14-SNAPSHOT</version>
+    <version>1.14</version>
     <url>https://code.nsa.gov/datawave-authorization-service</url>
     <scm>
         <connection>scm:git:https://github.com/NationalSecurityAgency/datawave-authorization-service.git</connection>
@@ -18,8 +18,8 @@
     </scm>
     <properties>
         <version.guava>31.1-jre</version.guava>
-        <version.jackson>2.9.9</version.jackson>
-        <version.jjwt>0.11.2</version.jjwt>
+        <version.jackson>2.13.3</version.jackson>
+        <version.jjwt>0.11.5</version.jjwt>
         <version.slf4j>1.7.26</version.slf4j>
     </properties>
     <dependencyManagement>
