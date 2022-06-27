@@ -4,11 +4,11 @@
     <parent>
         <groupId>gov.nsa.datawave.microservice</groupId>
         <artifactId>datawave-microservice-service-parent</artifactId>
-        <version>1.7.1</version>
+        <version>2.1</version>
         <relativePath />
     </parent>
     <artifactId>authorization-service</artifactId>
-    <version>1.14-SNAPSHOT</version>
+    <version>1.14</version>
     <description>DATAWAVE Authorization Microservice</description>
     <url>https://code.nsa.gov/datawave-authorization-service</url>
     <scm>
@@ -19,9 +19,9 @@
     </scm>
     <properties>
         <start-class>datawave.microservice.authorization.AuthorizationService</start-class>
-        <version.authorization-api>1.13</version.authorization-api>
-        <version.microservice.hazelcast-client>1.6</version.microservice.hazelcast-client>
-        <version.microservice.starter>1.6.7</version.microservice.starter>
+        <version.authorization-api>1.14</version.authorization-api>
+        <version.microservice.hazelcast-client>1.9</version.microservice.hazelcast-client>
+        <version.microservice.starter>1.6.8</version.microservice.starter>
         <version.zookeeper>3.4.14</version.zookeeper>
     </properties>
     <dependencyManagement>
@@ -64,6 +64,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <repositories>
