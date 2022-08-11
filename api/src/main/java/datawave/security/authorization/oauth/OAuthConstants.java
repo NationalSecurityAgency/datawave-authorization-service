@@ -1,4 +1,4 @@
-package datawave.security.authorization;
+package datawave.security.authorization.oauth;
 
 public class OAuthConstants {
     

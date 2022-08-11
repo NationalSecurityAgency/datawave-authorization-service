@@ -8,8 +8,8 @@ import datawave.security.authorization.AuthorizationException;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.JWTTokenHandler;
-import datawave.security.authorization.OAuthTokenResponse;
-import datawave.security.authorization.OAuthUserInfo;
+import datawave.security.authorization.oauth.OAuthTokenResponse;
+import datawave.security.authorization.oauth.OAuthUserInfo;
 import datawave.security.authorization.SubjectIssuerDNPair;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.apache.commons.lang.RandomStringUtils;
@@ -37,9 +37,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static datawave.security.authorization.OAuthConstants.GRANT_AUTHORIZATION_CODE;
-import static datawave.security.authorization.OAuthConstants.GRANT_REFRESH_TOKEN;
-import static datawave.security.authorization.OAuthConstants.RESPONSE_TYPE_CODE;
+import static datawave.security.authorization.oauth.OAuthConstants.GRANT_AUTHORIZATION_CODE;
+import static datawave.security.authorization.oauth.OAuthConstants.GRANT_REFRESH_TOKEN;
+import static datawave.security.authorization.oauth.OAuthConstants.RESPONSE_TYPE_CODE;
 
 /**
  * Presents the REST operations for the authorization service to implement the OAuth2 code flow.

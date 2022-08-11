@@ -1,4 +1,4 @@
-package datawave.security.authorization;
+package datawave.security.authorization.oauth;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

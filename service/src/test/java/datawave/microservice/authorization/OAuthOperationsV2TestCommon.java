@@ -8,8 +8,8 @@ import datawave.microservice.config.web.RestClientProperties;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.JWTTokenHandler;
-import datawave.security.authorization.OAuthTokenResponse;
-import datawave.security.authorization.OAuthUserInfo;
+import datawave.security.authorization.oauth.OAuthTokenResponse;
+import datawave.security.authorization.oauth.OAuthUserInfo;
 import datawave.security.authorization.SubjectIssuerDNPair;
 import datawave.security.util.ProxiedEntityUtils;
 import org.junit.jupiter.api.Assertions;
@@ -51,9 +51,9 @@ import java.util.UUID;
 
 import static datawave.security.authorization.DatawaveUser.UserType.SERVER;
 import static datawave.security.authorization.DatawaveUser.UserType.USER;
-import static datawave.security.authorization.OAuthConstants.GRANT_AUTHORIZATION_CODE;
-import static datawave.security.authorization.OAuthConstants.GRANT_REFRESH_TOKEN;
-import static datawave.security.authorization.OAuthConstants.RESPONSE_TYPE_CODE;
+import static datawave.security.authorization.oauth.OAuthConstants.GRANT_AUTHORIZATION_CODE;
+import static datawave.security.authorization.oauth.OAuthConstants.GRANT_REFRESH_TOKEN;
+import static datawave.security.authorization.oauth.OAuthConstants.RESPONSE_TYPE_CODE;
 
 public class OAuthOperationsV2TestCommon {
     

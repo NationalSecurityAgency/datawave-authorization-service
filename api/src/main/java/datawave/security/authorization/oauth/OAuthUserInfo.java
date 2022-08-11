@@ -1,8 +1,10 @@
-package datawave.security.authorization;
+package datawave.security.authorization.oauth;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Multimap;
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.authorization.SubjectIssuerDNPair;
 
 import java.util.Collection;
 

@@ -1,8 +1,8 @@
 package datawave.microservice.authorization;
 
 import datawave.microservice.authorization.user.ProxiedUserDetails;
-import datawave.security.authorization.OAuthTokenResponse;
-import datawave.security.authorization.OAuthUserInfo;
+import datawave.security.authorization.oauth.OAuthTokenResponse;
+import datawave.security.authorization.oauth.OAuthUserInfo;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

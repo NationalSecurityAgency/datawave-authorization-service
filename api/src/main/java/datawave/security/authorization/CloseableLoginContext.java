@@ -1,4 +1,4 @@
-package datawave.webservice.security;
+package datawave.security.authorization;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
