@@ -17,8 +17,9 @@
         <url>https://github.com/NationalSecurityAgency/datawave-authorization-service</url>
     </scm>
     <properties>
-        <version.guava>28.1-jre</version.guava>
+        <version.guava>31.1-jre</version.guava>
         <version.jackson>2.10.1</version.jackson>
+        <version.jaxb>2.3.3</version.jaxb>
         <version.jjwt>0.11.2</version.jjwt>
         <version.slf4j>1.7.26</version.slf4j>
     </properties>
@@ -38,6 +39,11 @@
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-jackson</artifactId>
                 <version>${version.jjwt}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${version.jaxb}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -68,12 +74,21 @@
             <version>${version.guava}</version>
         </dependency>
         <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${version.jaxb}</version>
+        </dependency>
+        <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
