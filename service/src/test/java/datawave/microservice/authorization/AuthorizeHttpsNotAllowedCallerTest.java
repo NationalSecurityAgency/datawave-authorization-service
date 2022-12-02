@@ -29,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.UUID;
+import java.util.function.Function;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -73,7 +74,7 @@ public class AuthorizeHttpsNotAllowedCallerTest {
     @Configuration
     public static class AuthorizationServiceTestConfiguration {
         @Bean
-        public CachedDatawaveUserService cachedDatawaveUserService(CacheManager cacheManager, CacheInspector cacheInspector) {
+        public CachedDatawaveUserService cachedDatawaveUserService(CacheManager cacheManager, Function<CacheManager,CacheInspector> cacheInspectorFactory) {
             return new AuthorizationTestUserService(Collections.EMPTY_MAP, true);
         }
         

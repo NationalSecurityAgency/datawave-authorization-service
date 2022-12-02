@@ -34,6 +34,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.function.Function;
 
 import static datawave.security.authorization.DatawaveUser.UserType.USER;
 
@@ -106,7 +107,7 @@ public class AuthorizationServiceV2Test {
     @Configuration
     public static class AuthorizationServiceTestConfiguration {
         @Bean
-        public CachedDatawaveUserService cachedDatawaveUserService(CacheManager cacheManager, CacheInspector cacheInspector) {
+        public CachedDatawaveUserService cachedDatawaveUserService(CacheManager cacheManager, Function<CacheManager,CacheInspector> cacheInspectorFactory) {
             return new AuthorizationTestUserService(Collections.EMPTY_MAP, true);
         }
         

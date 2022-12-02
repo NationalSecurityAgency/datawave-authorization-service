@@ -34,6 +34,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -119,7 +120,7 @@ public class CachingConfigurerTest {
     @Configuration
     public static class CachingConfiguration {
         @Bean
-        public CachedDatawaveUserService cachedDatawaveUserService(CacheManager cacheManager, CacheInspector cacheInspector) {
+        public CachedDatawaveUserService cachedDatawaveUserService(CacheManager cacheManager, Function<CacheManager,CacheInspector> cacheInspectorFactory) {
             return new AuthorizationTestUserService(Collections.EMPTY_MAP, true);
         }
         
