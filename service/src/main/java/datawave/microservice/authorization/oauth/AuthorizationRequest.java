@@ -6,22 +6,22 @@ import java.io.Serializable;
 
 public class AuthorizationRequest implements Serializable {
     
-    private DatawaveUserDetails DatawaveUserDetails;
+    private DatawaveUserDetails datawaveUserDetails;
     private AuthorizedClient authorizedClient;
     private String redirect_uri;
     
-    public AuthorizationRequest(DatawaveUserDetails DatawaveUserDetails, AuthorizedClient authorizedClient, String redirect_uri) {
-        this.DatawaveUserDetails = DatawaveUserDetails;
+    public AuthorizationRequest(DatawaveUserDetails datawaveUserDetails, AuthorizedClient authorizedClient, String redirect_uri) {
+        this.datawaveUserDetails = datawaveUserDetails;
         this.authorizedClient = authorizedClient;
         this.redirect_uri = redirect_uri;
     }
     
     public DatawaveUserDetails getDatawaveUserDetails() {
-        return DatawaveUserDetails;
+        return datawaveUserDetails;
     }
     
-    public void setDatawaveUserDetails(DatawaveUserDetails DatawaveUserDetails) {
-        this.DatawaveUserDetails = DatawaveUserDetails;
+    public void setDatawaveUserDetails(DatawaveUserDetails datawaveUserDetails) {
+        this.datawaveUserDetails = datawaveUserDetails;
     }
     
     public void setAuthorizedClient(AuthorizedClient authorizedClient) {
