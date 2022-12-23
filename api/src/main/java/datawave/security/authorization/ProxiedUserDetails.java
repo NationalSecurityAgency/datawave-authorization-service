@@ -3,7 +3,7 @@ package datawave.security.authorization;
 import java.util.Collection;
 import java.util.List;
 
-public interface ProxiedDatawaveUser {
+public interface ProxiedUserDetails {
     
     Collection<? extends DatawaveUser> getProxiedUsers();
     

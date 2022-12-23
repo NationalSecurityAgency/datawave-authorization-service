@@ -1,27 +1,27 @@
 package datawave.microservice.authorization.oauth;
 
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 
 import java.io.Serializable;
 
 public class AuthorizationRequest implements Serializable {
     
-    private ProxiedUserDetails proxiedUserDetails;
+    private DatawaveUserDetails DatawaveUserDetails;
     private AuthorizedClient authorizedClient;
     private String redirect_uri;
     
-    public AuthorizationRequest(ProxiedUserDetails proxiedUserDetails, AuthorizedClient authorizedClient, String redirect_uri) {
-        this.proxiedUserDetails = proxiedUserDetails;
+    public AuthorizationRequest(DatawaveUserDetails DatawaveUserDetails, AuthorizedClient authorizedClient, String redirect_uri) {
+        this.DatawaveUserDetails = DatawaveUserDetails;
         this.authorizedClient = authorizedClient;
         this.redirect_uri = redirect_uri;
     }
     
-    public ProxiedUserDetails getProxiedUserDetails() {
-        return proxiedUserDetails;
+    public DatawaveUserDetails getDatawaveUserDetails() {
+        return DatawaveUserDetails;
     }
     
-    public void setProxiedUserDetails(ProxiedUserDetails proxiedUserDetails) {
-        this.proxiedUserDetails = proxiedUserDetails;
+    public void setDatawaveUserDetails(DatawaveUserDetails DatawaveUserDetails) {
+        this.DatawaveUserDetails = DatawaveUserDetails;
     }
     
     public void setAuthorizedClient(AuthorizedClient authorizedClient) {

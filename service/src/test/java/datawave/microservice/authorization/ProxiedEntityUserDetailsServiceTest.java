@@ -4,7 +4,7 @@ import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import datawave.microservice.authorization.datawave.microservice.authorization.preauth.AuthorizationProxiedEntityPreauthPrincipal;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.authorization.userdetails.ProxiedEntityUserDetailsService;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.SubjectIssuerDNPair;
@@ -56,13 +56,13 @@ public class ProxiedEntityUserDetailsServiceTest {
         proxiedEntities.add(USER_3);
         AuthorizationProxiedEntityPreauthPrincipal principal = new AuthorizationProxiedEntityPreauthPrincipal(CALLER, proxiedEntities, null);
         PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(principal, null);
-        ProxiedUserDetails proxiedUserDetails = (ProxiedUserDetails) userDetailsService.loadUserDetails(token);
-        // ProxiedEntityUserDetailsService should return a ProxiedUserDetails with all proxied users and the caller
-        assertEquals(4, proxiedUserDetails.getProxiedUsers().size());
-        assertEquals(USER_1, proxiedUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
-        assertEquals(USER_2, proxiedUserDetails.getProxiedUsers().stream().skip(1).findFirst().get().getDn());
-        assertEquals(USER_3, proxiedUserDetails.getProxiedUsers().stream().skip(2).findFirst().get().getDn());
-        assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().skip(3).findFirst().get().getDn());
+        DatawaveUserDetails DatawaveUserDetails = (DatawaveUserDetails) userDetailsService.loadUserDetails(token);
+        // ProxiedEntityUserDetailsService should return a DatawaveUserDetails with all proxied users and the caller
+        assertEquals(4, DatawaveUserDetails.getProxiedUsers().size());
+        assertEquals(USER_1, DatawaveUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
+        assertEquals(USER_2, DatawaveUserDetails.getProxiedUsers().stream().skip(1).findFirst().get().getDn());
+        assertEquals(USER_3, DatawaveUserDetails.getProxiedUsers().stream().skip(2).findFirst().get().getDn());
+        assertEquals(CALLER, DatawaveUserDetails.getProxiedUsers().stream().skip(3).findFirst().get().getDn());
     }
     
     @Test
@@ -70,10 +70,10 @@ public class ProxiedEntityUserDetailsServiceTest {
         List<SubjectIssuerDNPair> proxiedEntities = new ArrayList<>();
         AuthorizationProxiedEntityPreauthPrincipal principal = new AuthorizationProxiedEntityPreauthPrincipal(CALLER, proxiedEntities, null);
         PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(principal, null);
-        ProxiedUserDetails proxiedUserDetails = (ProxiedUserDetails) userDetailsService.loadUserDetails(token);
-        // ProxiedEntityUserDetailsService should return a ProxiedUserDetails with only the caller
-        assertEquals(1, proxiedUserDetails.getProxiedUsers().size());
-        assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
+        DatawaveUserDetails DatawaveUserDetails = (DatawaveUserDetails) userDetailsService.loadUserDetails(token);
+        // ProxiedEntityUserDetailsService should return a DatawaveUserDetails with only the caller
+        assertEquals(1, DatawaveUserDetails.getProxiedUsers().size());
+        assertEquals(CALLER, DatawaveUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
     }
     
     @Test
@@ -83,12 +83,12 @@ public class ProxiedEntityUserDetailsServiceTest {
         proxiedEntities.add(CALLER);
         AuthorizationProxiedEntityPreauthPrincipal principal = new AuthorizationProxiedEntityPreauthPrincipal(CALLER, proxiedEntities, null);
         PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(principal, null);
-        ProxiedUserDetails proxiedUserDetails = (ProxiedUserDetails) userDetailsService.loadUserDetails(token);
-        // ProxiedEntityUserDetailsService should return a ProxiedUserDetails with all proxied users and the caller
-        assertEquals(3, proxiedUserDetails.getProxiedUsers().size());
-        assertEquals(USER_1, proxiedUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
-        assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().skip(1).findFirst().get().getDn());
-        assertEquals(CALLER, proxiedUserDetails.getProxiedUsers().stream().skip(2).findFirst().get().getDn());
+        DatawaveUserDetails DatawaveUserDetails = (DatawaveUserDetails) userDetailsService.loadUserDetails(token);
+        // ProxiedEntityUserDetailsService should return a DatawaveUserDetails with all proxied users and the caller
+        assertEquals(3, DatawaveUserDetails.getProxiedUsers().size());
+        assertEquals(USER_1, DatawaveUserDetails.getProxiedUsers().stream().findFirst().get().getDn());
+        assertEquals(CALLER, DatawaveUserDetails.getProxiedUsers().stream().skip(1).findFirst().get().getDn());
+        assertEquals(CALLER, DatawaveUserDetails.getProxiedUsers().stream().skip(2).findFirst().get().getDn());
     }
     
     @ImportAutoConfiguration({RefreshAutoConfiguration.class})

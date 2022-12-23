@@ -1,7 +1,7 @@
 package datawave.microservice.authorization;
 
 import datawave.microservice.authorization.preauth.ProxiedEntityX509Filter;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.security.authorization.JWTTokenHandler;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -31,7 +31,7 @@ public class AuthorizationTestUtils {
         this.webServicePort = webServicePort;
     }
     
-    public void testAdminMethodFailure(ProxiedUserDetails unauthUser, String path, String query) throws Exception {
+    public void testAdminMethodFailure(DatawaveUserDetails unauthUser, String path, String query) throws Exception {
         UriComponents uri = UriComponentsBuilder.newInstance().scheme(scheme).host("localhost").port(webServicePort).path(path).query(query).build();
         try {
             RequestEntity requestEntity = createRequestEntity(null, unauthUser, HttpMethod.GET, uri);
@@ -43,18 +43,18 @@ public class AuthorizationTestUtils {
         }
     }
     
-    public void testAdminMethodSuccess(ProxiedUserDetails authUser, String path, String query) throws Exception {
+    public void testAdminMethodSuccess(DatawaveUserDetails authUser, String path, String query) throws Exception {
         UriComponents uri = UriComponentsBuilder.newInstance().scheme(scheme).host("localhost").port(webServicePort).path(path).query(query).build();
         RequestEntity requestEntity = createRequestEntity(null, authUser, HttpMethod.GET, uri);
         ResponseEntity<String> entity = restTemplate.exchange(requestEntity, String.class);
         assertEquals(HttpStatus.OK, entity.getStatusCode(), "Authorizaed admin request to " + uri + " did not return a 200.");
     }
     
-    public void testAuthorizeMethodFailure(ProxiedUserDetails unauthUser, String path, boolean useTrustedHeader, boolean useJWT) throws Exception {
+    public void testAuthorizeMethodFailure(DatawaveUserDetails unauthUser, String path, boolean useTrustedHeader, boolean useJWT) throws Exception {
         UriComponents uri = UriComponentsBuilder.newInstance().scheme(scheme).host("localhost").port(webServicePort).path(path).build();
         try {
             RequestEntity requestEntity;
-            ProxiedUserDetails trustedHeaderUser = useTrustedHeader ? unauthUser : null;
+            DatawaveUserDetails trustedHeaderUser = useTrustedHeader ? unauthUser : null;
             if (useJWT) {
                 requestEntity = createRequestEntity(trustedHeaderUser, unauthUser, HttpMethod.GET, uri);
             } else {
@@ -68,10 +68,10 @@ public class AuthorizationTestUtils {
         }
     }
     
-    public void testAuthorizeMethodSuccess(ProxiedUserDetails authUser, String path, boolean useTrustedHeader, boolean useJWT) throws Exception {
+    public void testAuthorizeMethodSuccess(DatawaveUserDetails authUser, String path, boolean useTrustedHeader, boolean useJWT) throws Exception {
         UriComponents uri = UriComponentsBuilder.newInstance().scheme(scheme).host("localhost").port(webServicePort).path(path).build();
         RequestEntity requestEntity;
-        ProxiedUserDetails trustedHeaderUser = useTrustedHeader ? authUser : null;
+        DatawaveUserDetails trustedHeaderUser = useTrustedHeader ? authUser : null;
         if (useJWT) {
             requestEntity = createRequestEntity(trustedHeaderUser, authUser, HttpMethod.GET, uri);
         } else {
@@ -81,7 +81,7 @@ public class AuthorizationTestUtils {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode(), "Authorized request to " + uri + " did not return a 200.");
     }
     
-    public <T> RequestEntity<T> createRequestEntity(ProxiedUserDetails trustedUser, ProxiedUserDetails jwtUser, HttpMethod method, UriComponents uri) {
+    public <T> RequestEntity<T> createRequestEntity(DatawaveUserDetails trustedUser, DatawaveUserDetails jwtUser, HttpMethod method, UriComponents uri) {
         
         HttpHeaders headers = new HttpHeaders();
         if (this.jwtTokenHandler != null && jwtUser != null) {

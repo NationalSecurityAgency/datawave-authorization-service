@@ -1,7 +1,7 @@
 package datawave.microservice.authorization;
 
 import datawave.microservice.authorization.config.AuthorizationsListSupplier;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.security.util.DnUtils;
 import datawave.security.DnList;
 import datawave.security.authorization.CachedDatawaveUserService;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 import static org.springframework.web.accept.ContentNegotiationStrategy.MEDIA_TYPE_ALL_LIST;
 
 /**
- * Presents the REST operations for the authorization service. This version returns a DatawaveUserV1 individually and when encapsulated by a ProxiedUserDetails
+ * Presents the REST operations for the authorization service. This version returns a DatawaveUserV1 individually and when encapsulated by a DatawaveUserDetails
  * to avoid serialization errors in clients that have not been updated
  */
 @Service("authOperationsV1")
@@ -62,21 +62,21 @@ public class AuthorizationOperationsV1 {
     }
     
     // Convert default DatawaveUser (v2) to DatawaveUserV1 for backward compatability of v1 operation
-    // If there are any proxied users, exclude the last caller from the returned ProxiedUserDetails
-    // If there is only one user, use that user in the returned ProxiedUserDetails
-    private ProxiedUserDetails transformCurrentUser(ProxiedUserDetails currentUser) {
+    // If there are any proxied users, exclude the last caller from the returned DatawaveUserDetails
+    // If there is only one user, use that user in the returned DatawaveUserDetails
+    private DatawaveUserDetails transformCurrentUser(DatawaveUserDetails currentUser) {
         int numUsers = currentUser.getProxiedUsers().size();
         long limit = numUsers == 1 ? 1 : numUsers - 1;
         List<DatawaveUser> proxiedUsersV1 = currentUser.getProxiedUsers().stream().limit(limit).map(u -> new DatawaveUserV1(u)).collect(Collectors.toList());
-        return new ProxiedUserDetails(proxiedUsersV1, currentUser.getCreationTime());
+        return new DatawaveUserDetails(proxiedUsersV1, currentUser.getCreationTime());
     }
     
-    public String user(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
-        ProxiedUserDetails transformedUser = transformCurrentUser(currentUser);
+    public String user(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
+        DatawaveUserDetails transformedUser = transformCurrentUser(currentUser);
         return tokenHandler.createTokenFromUsers(transformedUser.getUsername(), transformedUser.getProxiedUsers());
     }
     
-    public AuthorizationsListBase<?> listEffectiveAuthorizations(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
+    public AuthorizationsListBase<?> listEffectiveAuthorizations(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
         final AuthorizationsListBase<?> list = authorizationsListSupplier.get();
         
         // Find out who/what called this method
@@ -98,9 +98,9 @@ public class AuthorizationOperationsV1 {
     }
     
     /**
-     * Returns the {@link ProxiedUserDetails} that represents the authenticated calling user.
+     * Returns the {@link DatawaveUserDetails} that represents the authenticated calling user.
      */
-    public ProxiedUserDetails hello(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
+    public DatawaveUserDetails hello(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
         return transformCurrentUser(currentUser);
     }
     

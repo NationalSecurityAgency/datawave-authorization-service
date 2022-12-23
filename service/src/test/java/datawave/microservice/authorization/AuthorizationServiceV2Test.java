@@ -3,7 +3,7 @@ package datawave.microservice.authorization;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.cached.CacheInspector;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
@@ -62,17 +62,17 @@ public class AuthorizationServiceV2Test {
     
     private AuthorizationTestUtils testUtils;
     
-    private static ProxiedUserDetails allowedAdminCaller;
-    private static ProxiedUserDetails allowedNonAdminCaller;
+    private static DatawaveUserDetails allowedAdminCaller;
+    private static DatawaveUserDetails allowedNonAdminCaller;
     
     @BeforeAll
     public static void classSetup() {
         Collection<String> roles = Collections.singleton("Administrator");
         DatawaveUser allowedAdminDWUser = new DatawaveUser(ALLOWED_ADMIN_CALLER, USER, null, null, roles, null, System.currentTimeMillis());
-        allowedAdminCaller = new ProxiedUserDetails(Collections.singleton(allowedAdminDWUser), allowedAdminDWUser.getCreationTime());
+        allowedAdminCaller = new DatawaveUserDetails(Collections.singleton(allowedAdminDWUser), allowedAdminDWUser.getCreationTime());
         
         DatawaveUser allowedNonAdminDWUser = new DatawaveUser(ALLOWED_NONADMIN_CALLER, USER, null, null, null, null, System.currentTimeMillis());
-        allowedNonAdminCaller = new ProxiedUserDetails(Collections.singleton(allowedNonAdminDWUser), allowedNonAdminDWUser.getCreationTime());
+        allowedNonAdminCaller = new DatawaveUserDetails(Collections.singleton(allowedNonAdminDWUser), allowedNonAdminDWUser.getCreationTime());
     }
     
     @BeforeEach

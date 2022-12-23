@@ -1,6 +1,6 @@
 package datawave.microservice.authorization;
 
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.DatawaveUserInfo;
@@ -26,7 +26,7 @@ import java.util.Collection;
 import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
 
 /**
- * Presents the REST operations for the authorization service. This version returns a DatawaveUserV1 individually and when encapsulated by a ProxiedUserDetails
+ * Presents the REST operations for the authorization service. This version returns a DatawaveUserV1 individually and when encapsulated by a DatawaveUserDetails
  * to avoid serialization errors in clients that have not been updated
  */
 @Tag(name = "Authorization Operations /v1",
@@ -47,25 +47,25 @@ public class AuthorizationControllerV1 {
                                     + "The JWT is created from the proxied users if present or from the supplied client certificate "
                                     + "or trusted headers (X-SSL-clientcert-subject/X-SSL-clientcert-issuer) if there are no proxied users.")
     @RequestMapping(path = "/authorize", produces = {MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE}, method = RequestMethod.GET)
-    public String user(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
+    public String user(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
         return authOperations.user(currentUser);
     }
     
     @Operation(summary = "Lists the effective Accumulo user authorizations for the calling user.")
     @RequestMapping(path = "/listEffectiveAuthorizations", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE,
             MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, PROTOSTUFF_VALUE, MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
-    public AuthorizationsListBase<?> listEffectiveAuthorizations(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
+    public AuthorizationsListBase<?> listEffectiveAuthorizations(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
         return authOperations.listEffectiveAuthorizations(currentUser);
     }
     
     /**
-     * Returns the {@link ProxiedUserDetails} that represents the authenticated calling user.
+     * Returns the {@link DatawaveUserDetails} that represents the authenticated calling user.
      */
     @Operation(summary = "Returns details about the current user/proxied user(s).",
                     description = "The user(s) can be determined from the proxied user(s) if present or from the supplied client certificate "
                                     + "or trusted headers (X-SSL-clientcert-subject/X-SSL-clientcert-issuer) if there are no proxied users.")
     @RequestMapping(path = "/whoami", method = RequestMethod.GET)
-    public ProxiedUserDetails hello(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
+    public DatawaveUserDetails hello(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
         return authOperations.hello(currentUser);
     }
     

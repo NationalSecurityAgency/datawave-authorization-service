@@ -1,6 +1,6 @@
 package datawave.microservice.authorization;
 
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.security.authorization.oauth.OAuthTokenResponse;
 import datawave.security.authorization.oauth.OAuthUserInfo;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
@@ -40,7 +40,7 @@ public class OAuthControllerV2 {
                                     + "The user can be determined with from the supplied client certificate or trusted headers ("
                                     + "X-SSL-clientcert-subject/X-SSL-clientcert-issuer).")
     @RequestMapping(path = "/authorize", method = RequestMethod.GET)
-    public void authorize(@AuthenticationPrincipal ProxiedUserDetails currentUser, HttpServletResponse response, @RequestParam String client_id,
+    public void authorize(@AuthenticationPrincipal DatawaveUserDetails currentUser, HttpServletResponse response, @RequestParam String client_id,
                     @RequestParam String redirect_uri, @RequestParam String response_type, @RequestParam(required = false) String state)
                     throws IllegalArgumentException, IOException {
         oauthOperations.authorize(currentUser, response, client_id, redirect_uri, response_type, state);
@@ -51,14 +51,14 @@ public class OAuthControllerV2 {
                                     + "The user can be determined with from the supplied client certificate or trusted headers ("
                                     + "X-SSL-clientcert-subject/X-SSL-clientcert-issuer).")
     @RequestMapping(path = "/token", method = RequestMethod.POST)
-    public OAuthTokenResponse token(@AuthenticationPrincipal ProxiedUserDetails currentUser, HttpServletResponse response, @RequestParam String grant_type,
+    public OAuthTokenResponse token(@AuthenticationPrincipal DatawaveUserDetails currentUser, HttpServletResponse response, @RequestParam String grant_type,
                     @RequestParam String client_id, @RequestParam String client_secret, @RequestParam(required = false) String code,
                     @RequestParam(required = false) String refresh_token, @RequestParam(required = false) String redirect_uri) throws IOException {
         return oauthOperations.token(currentUser, response, grant_type, client_id, client_secret, code, refresh_token, redirect_uri);
     }
     
     /**
-     * Returns the {@link ProxiedUserDetails} that represents the authenticated calling user.
+     * Returns the {@link DatawaveUserDetails} that represents the authenticated calling user.
      */
     @Operation(summary = "Returns details about the current primary user.",
                     description = "The user can be determined from the supplied client certificate, trusted headers ("
@@ -66,12 +66,12 @@ public class OAuthControllerV2 {
                                     + "Proxied user headers (X-ProxiedEntitiesChain/X-ProxiedIssuersChain) "
                                     + "are also used to determine proxied users to include in the returned details.")
     @RequestMapping(path = "/user", method = RequestMethod.GET)
-    public OAuthUserInfo user(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
+    public OAuthUserInfo user(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
         return oauthOperations.user(currentUser);
     }
     
     /**
-     * Returns the {@link ProxiedUserDetails} that represents the authenticated calling user.
+     * Returns the {@link DatawaveUserDetails} that represents the authenticated calling user.
      */
     @Operation(summary = "Returns details about the current user/proxied users.",
                     description = "The user can be determined from the supplied client certificate, trusted headers ("
@@ -79,7 +79,7 @@ public class OAuthControllerV2 {
                                     + "Proxied user headers (X-ProxiedEntitiesChain/X-ProxiedIssuersChain) "
                                     + "are also used to determine proxied users to include in the returned details.")
     @RequestMapping(path = "/users", method = RequestMethod.GET)
-    public Collection<OAuthUserInfo> users(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
+    public Collection<OAuthUserInfo> users(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
         return oauthOperations.users(currentUser);
     }
 }

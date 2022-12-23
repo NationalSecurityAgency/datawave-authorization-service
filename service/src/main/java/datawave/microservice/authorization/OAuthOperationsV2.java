@@ -3,14 +3,14 @@ package datawave.microservice.authorization;
 import datawave.microservice.authorization.oauth.AuthorizationRequest;
 import datawave.microservice.authorization.oauth.AuthorizedClient;
 import datawave.microservice.authorization.oauth.OAuthProperties;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.security.authorization.AuthorizationException;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.JWTTokenHandler;
+import datawave.security.authorization.SubjectIssuerDNPair;
 import datawave.security.authorization.oauth.OAuthTokenResponse;
 import datawave.security.authorization.oauth.OAuthUserInfo;
-import datawave.security.authorization.SubjectIssuerDNPair;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
@@ -63,7 +63,7 @@ public class OAuthOperationsV2 {
         this.authCache = cacheManager.getCache("oauthAuthorizations");
     }
     
-    public void authorize(@AuthenticationPrincipal ProxiedUserDetails currentUser, HttpServletResponse response, @RequestParam String client_id,
+    public void authorize(@AuthenticationPrincipal DatawaveUserDetails currentUser, HttpServletResponse response, @RequestParam String client_id,
                     @RequestParam String redirect_uri, @RequestParam String response_type, @RequestParam(required = false) String state)
                     throws IllegalArgumentException, IOException {
         
@@ -88,7 +88,7 @@ public class OAuthOperationsV2 {
         response.sendRedirect(builder.toString());
     }
     
-    public OAuthTokenResponse token(@AuthenticationPrincipal ProxiedUserDetails currentUser, HttpServletResponse response, @RequestParam String grant_type,
+    public OAuthTokenResponse token(@AuthenticationPrincipal DatawaveUserDetails currentUser, HttpServletResponse response, @RequestParam String grant_type,
                     @RequestParam String client_id, @RequestParam String client_secret, @RequestParam(required = false) String code,
                     @RequestParam(required = false) String refresh_token, @RequestParam(required = false) String redirect_uri) throws IOException {
         
@@ -124,9 +124,9 @@ public class OAuthOperationsV2 {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "invalid_request (redirect_uri must match the value when authorize was called)");
                 return null;
             }
-            log.debug("Issuing a token for " + authorizationRequest.getProxiedUserDetails().getPrimaryUser().getCommonName() + " to "
+            log.debug("Issuing a token for " + authorizationRequest.getDatawaveUserDetails().getPrimaryUser().getCommonName() + " to "
                             + client.getClient_name());
-            authorizationRequest.getProxiedUserDetails().getProxiedUsers().forEach(u -> userDnsToLookupAndAdd.add(u.getDn()));
+            authorizationRequest.getDatawaveUserDetails().getProxiedUsers().forEach(u -> userDnsToLookupAndAdd.add(u.getDn()));
             // Add dn for the DN corresponding to the client that is invoking this call
             // Required for authorization_code path, but not refresh_token path since all DNs will be in refresh token
             currentUser.getProxiedUsers().forEach(u -> userDnsToLookupAndAdd.add(u.getDn()));
@@ -177,16 +177,16 @@ public class OAuthOperationsV2 {
     }
     
     /**
-     * Returns the {@link ProxiedUserDetails} that represents the authenticated calling user.
+     * Returns the {@link DatawaveUserDetails} that represents the authenticated calling user.
      */
-    public OAuthUserInfo user(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
+    public OAuthUserInfo user(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
         return new OAuthUserInfo(currentUser.getPrimaryUser());
     }
     
     /**
-     * Returns the {@link ProxiedUserDetails} that represents the authenticated calling user.
+     * Returns the {@link DatawaveUserDetails} that represents the authenticated calling user.
      */
-    public Collection<OAuthUserInfo> users(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
+    public Collection<OAuthUserInfo> users(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
         List<OAuthUserInfo> users = new ArrayList<>();
         currentUser.getProxiedUsers().forEach(u -> users.add(new OAuthUserInfo(u)));
         return users;

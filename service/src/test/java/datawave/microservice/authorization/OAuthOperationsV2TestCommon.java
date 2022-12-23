@@ -3,14 +3,14 @@ package datawave.microservice.authorization;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.config.web.RestClientProperties;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.JWTTokenHandler;
+import datawave.security.authorization.SubjectIssuerDNPair;
 import datawave.security.authorization.oauth.OAuthTokenResponse;
 import datawave.security.authorization.oauth.OAuthUserInfo;
-import datawave.security.authorization.SubjectIssuerDNPair;
 import datawave.security.util.ProxiedEntityUtils;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -314,10 +314,10 @@ public class OAuthOperationsV2TestCommon {
     private ResponseEntity<String> authorize(DatawaveUser dwUser, AUTH_TYPE authType, String response_type, String client_id, String redirect_uri,
                     String state) {
         
-        ProxiedUserDetails trustedHeaderUser = authType.equals(AUTH_TYPE.TRUSTED_HEADER)
-                        ? new ProxiedUserDetails(Collections.singleton(dwUser), dwUser.getCreationTime())
+        DatawaveUserDetails trustedHeaderUser = authType.equals(AUTH_TYPE.TRUSTED_HEADER)
+                        ? new DatawaveUserDetails(Collections.singleton(dwUser), dwUser.getCreationTime())
                         : null;
-        ProxiedUserDetails jwtUser = authType.equals(AUTH_TYPE.JWT) ? new ProxiedUserDetails(Collections.singleton(dwUser), dwUser.getCreationTime()) : null;
+        DatawaveUserDetails jwtUser = authType.equals(AUTH_TYPE.JWT) ? new DatawaveUserDetails(Collections.singleton(dwUser), dwUser.getCreationTime()) : null;
         
         MultiValueMap<String,String> queryParams = new LinkedMultiValueMap<>();
         if (response_type != null) {
@@ -340,7 +340,7 @@ public class OAuthOperationsV2TestCommon {
     
     private ResponseEntity<OAuthTokenResponse> token(DatawaveUser dwServer, String grant_type, String client_id, String client_secret, String code,
                     String redirect_uri, String refresh_token) {
-        ProxiedUserDetails authServer = new ProxiedUserDetails(Collections.singleton(dwServer), dwServer.getCreationTime());
+        DatawaveUserDetails authServer = new DatawaveUserDetails(Collections.singleton(dwServer), dwServer.getCreationTime());
         MultiValueMap<String,String> queryParams = new LinkedMultiValueMap<>();
         if (grant_type != null) {
             queryParams.put("grant_type", Collections.singletonList(grant_type));
@@ -370,7 +370,7 @@ public class OAuthOperationsV2TestCommon {
     
     private ResponseEntity<OAuthUserInfo> user(String token, String claim) {
         Collection<DatawaveUser> dwUsers = jwtTokenHandler.createUsersFromToken(token, claim);
-        ProxiedUserDetails authUser = new ProxiedUserDetails(dwUsers, dwUsers.stream().findFirst().get().getCreationTime());
+        DatawaveUserDetails authUser = new DatawaveUserDetails(dwUsers, dwUsers.stream().findFirst().get().getCreationTime());
         UriComponents userUri = UriComponentsBuilder.newInstance().scheme(testUtils.getScheme()).host("localhost").port(webServicePort)
                         .path("/authorization/v2/oauth/user").build();
         RequestEntity requestEntity = testUtils.createRequestEntity(null, authUser, HttpMethod.GET, userUri);
@@ -379,7 +379,7 @@ public class OAuthOperationsV2TestCommon {
     
     private ResponseEntity<OAuthUserInfo[]> users(String token, String claim) {
         Collection<DatawaveUser> dwUsers = jwtTokenHandler.createUsersFromToken(token, claim);
-        ProxiedUserDetails authUser = new ProxiedUserDetails(dwUsers, dwUsers.stream().findFirst().get().getCreationTime());
+        DatawaveUserDetails authUser = new DatawaveUserDetails(dwUsers, dwUsers.stream().findFirst().get().getCreationTime());
         UriComponents userUri = UriComponentsBuilder.newInstance().scheme(testUtils.getScheme()).host("localhost").port(webServicePort)
                         .path("/authorization/v2/oauth/users").build();
         RequestEntity requestEntity = testUtils.createRequestEntity(null, authUser, HttpMethod.GET, userUri);

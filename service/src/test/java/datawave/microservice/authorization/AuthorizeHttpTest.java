@@ -3,7 +3,7 @@ package datawave.microservice.authorization;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.cached.CacheInspector;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
@@ -67,8 +67,8 @@ public class AuthorizeHttpTest {
     
     private AuthorizationTestUtils testUtils;
     
-    private ProxiedUserDetails allowedCaller;
-    private ProxiedUserDetails notAllowedCaller;
+    private DatawaveUserDetails allowedCaller;
+    private DatawaveUserDetails notAllowedCaller;
     private RestTemplate restTemplate;
     
     @BeforeEach
@@ -78,10 +78,10 @@ public class AuthorizeHttpTest {
         testUtils = new AuthorizationTestUtils(jwtTokenHandler, restTemplate, "http", webServicePort);
         
         DatawaveUser allowedDWUser = new DatawaveUser(ALLOWED_CALLER, USER, null, null, null, null, System.currentTimeMillis());
-        allowedCaller = new ProxiedUserDetails(Collections.singleton(allowedDWUser), allowedDWUser.getCreationTime());
+        allowedCaller = new DatawaveUserDetails(Collections.singleton(allowedDWUser), allowedDWUser.getCreationTime());
         
         DatawaveUser notAllowedDWUser = new DatawaveUser(NOT_ALOWED_CALLER, USER, null, null, null, null, System.currentTimeMillis());
-        notAllowedCaller = new ProxiedUserDetails(Collections.singleton(notAllowedDWUser), notAllowedDWUser.getCreationTime());
+        notAllowedCaller = new DatawaveUserDetails(Collections.singleton(notAllowedDWUser), notAllowedDWUser.getCreationTime());
     }
     
     @Test

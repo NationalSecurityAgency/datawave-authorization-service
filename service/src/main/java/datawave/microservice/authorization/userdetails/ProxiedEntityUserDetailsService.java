@@ -4,7 +4,7 @@ import datawave.microservice.authorization.config.AuthorizationAllowedCallersFil
 import datawave.microservice.authorization.config.DatawaveSecurityProperties;
 import datawave.microservice.authorization.datawave.microservice.authorization.preauth.AuthorizationProxiedEntityPreauthPrincipal;
 import datawave.microservice.authorization.preauth.ProxiedEntityPreauthPrincipal;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.security.authorization.AuthorizationException;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.DatawaveUserService;
@@ -26,7 +26,7 @@ import java.util.List;
 
 /**
  * An {@link AuthenticationUserDetailsService} that retrieves user information from a {@link DatawaveUserService} for a set of proxied entity names, and
- * combines the results into a {@link ProxiedUserDetails}.
+ * combines the results into a {@link DatawaveUserDetails}.
  * <p>
  * Note that for authentication purposes, it is assumed that another service is authenticating on behalf of a user, and therefore <em>only</em> the
  * X-ProxiedEntitiesChain/X-ProxiedIssuersChain values are used to calculate the authenticated principal and the incoming certificate is only used to determine
@@ -81,7 +81,7 @@ public class ProxiedEntityUserDetailsService implements AuthenticationUserDetail
             users.add(principal.getCallerPrincipal());
             List<DatawaveUser> principals = new ArrayList<>(datawaveUserService.lookup(users));
             long createTime = principals.stream().map(DatawaveUser::getCreationTime).min(Long::compareTo).orElse(System.currentTimeMillis());
-            return new ProxiedUserDetails(principals, createTime);
+            return new DatawaveUserDetails(principals, createTime);
         } catch (AuthorizationException e) {
             logger.error("Failed performing lookup of {}: {}", principal.getUsername(), e);
             throw new UsernameNotFoundException(e.getMessage(), e);

@@ -1,7 +1,7 @@
 package datawave.microservice.authorization;
 
 import datawave.microservice.authorization.config.AuthorizationsListSupplier;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.security.util.DnUtils;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
@@ -28,27 +28,27 @@ public class AuthorizationOperationsV2 extends AuthorizationOperationsV1 {
         super(tokenHandler, cachedDatawaveUserService, appCtx, busProperties, authorizationsListSupplier, dnUtils);
     }
     
-    // If there are any proxied users, exclude the last caller from the returned ProxiedUserDetails
-    // If there is only one user, return the provided ProxiedUserDetails unchanged
-    private ProxiedUserDetails transformCurrentUser(ProxiedUserDetails currentUser) {
+    // If there are any proxied users, exclude the last caller from the returned DatawaveUserDetails
+    // If there is only one user, return the provided DatawaveUserDetails unchanged
+    private DatawaveUserDetails transformCurrentUser(DatawaveUserDetails currentUser) {
         int numUsers = currentUser.getProxiedUsers().size();
         if (numUsers == 1) {
             return currentUser;
         } else {
-            return new ProxiedUserDetails(currentUser.getProxiedUsers().stream().limit(numUsers - 1).collect(Collectors.toList()),
+            return new DatawaveUserDetails(currentUser.getProxiedUsers().stream().limit(numUsers - 1).collect(Collectors.toList()),
                             currentUser.getCreationTime());
         }
     }
     
-    public String user(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
-        ProxiedUserDetails transformedUser = transformCurrentUser(currentUser);
+    public String user(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
+        DatawaveUserDetails transformedUser = transformCurrentUser(currentUser);
         return tokenHandler.createTokenFromUsers(transformedUser.getUsername(), transformedUser.getProxiedUsers());
     }
     
     /**
-     * Returns the {@link ProxiedUserDetails} that represents the authenticated calling user.
+     * Returns the {@link DatawaveUserDetails} that represents the authenticated calling user.
      */
-    public ProxiedUserDetails hello(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
+    public DatawaveUserDetails hello(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
         return transformCurrentUser(currentUser);
     }
     
