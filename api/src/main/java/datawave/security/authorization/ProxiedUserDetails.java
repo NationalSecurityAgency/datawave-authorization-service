@@ -7,6 +7,8 @@ public interface ProxiedUserDetails {
     
     Collection<? extends DatawaveUser> getProxiedUsers();
     
+    String getName();
+    
     DatawaveUser getPrimaryUser();
     
     Collection<? extends Collection<String>> getAuthorizations();
