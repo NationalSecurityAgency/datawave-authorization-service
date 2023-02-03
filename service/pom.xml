@@ -20,8 +20,8 @@
     <properties>
         <start-class>datawave.microservice.authorization.AuthorizationService</start-class>
         <version.authorization-api>1.13</version.authorization-api>
-        <version.microservice.hazelcast-client>1.6</version.microservice.hazelcast-client>
-        <version.microservice.starter>1.6.7</version.microservice.starter>
+        <version.microservice.hazelcast-client>1.9</version.microservice.hazelcast-client>
+        <version.microservice.starter>1.6.8</version.microservice.starter>
         <version.zookeeper>3.4.14</version.zookeeper>
     </properties>
     <dependencyManagement>
