@@ -21,8 +21,8 @@
         <start-class>datawave.microservice.authorization.AuthorizationService</start-class>
         <version.authorization-api>2.1.1-SNAPSHOT</version.authorization-api>
         <version.jaxb>2.3.3</version.jaxb>
-        <version.microservice.hazelcast-client>2.1.0</version.microservice.hazelcast-client>
-        <version.microservice.starter>2.1.0</version.microservice.starter>
+        <version.microservice.hazelcast-client>2.1.1</version.microservice.hazelcast-client>
+        <version.microservice.starter>2.1.1</version.microservice.starter>
         <version.zookeeper>3.8.0</version.zookeeper>
     </properties>
     <dependencyManagement>
