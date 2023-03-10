@@ -46,6 +46,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import static datawave.security.authorization.DatawaveUser.UserType.USER;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -138,7 +139,7 @@ public class AuthorizationServiceV1Test {
         // the call is being authenticated using a JWT of the provided user. The roles are encapsulated in the JWT
         RequestEntity requestEntity = testUtils.createRequestEntity(null, allowedAdminCaller, HttpMethod.GET, uri);
         ResponseEntity<Object> r = restTemplate.exchange(requestEntity, Object.class);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             objectMapper.convertValue(r.getBody(), DatawaveUserTestV1.class);
         });
     }
