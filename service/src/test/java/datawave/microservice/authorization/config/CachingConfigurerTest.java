@@ -133,7 +133,7 @@ public class CachingConfigurerTest {
         }
         
         @Bean
-        public BusProperties pusProperties() {
+        public BusProperties busProperties() {
             return new BusProperties();
         }
         
