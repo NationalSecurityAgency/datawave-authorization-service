@@ -1,7 +1,5 @@
-package datawave.microservice.authorization.datawave.microservice.authorization.preauth;
+package datawave.microservice.authorization.preauth;
 
-import datawave.microservice.authorization.preauth.ProxiedEntityPreauthPrincipal;
-import datawave.microservice.authorization.preauth.ProxiedEntityX509Filter;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
 import javax.servlet.http.HttpServletRequest;

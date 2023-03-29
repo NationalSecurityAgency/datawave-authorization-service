@@ -1,8 +1,8 @@
 package datawave.microservice.authorization.config;
 
-import datawave.microservice.authorization.datawave.microservice.authorization.preauth.AuthorizationProxiedEntityX509Filter;
 import datawave.microservice.authorization.jwt.JWTAuthenticationFilter;
 import datawave.microservice.authorization.jwt.JWTAuthenticationProvider;
+import datawave.microservice.authorization.preauth.AuthorizationProxiedEntityX509Filter;
 import datawave.microservice.config.security.AllowedCallersFilter;
 import datawave.microservice.config.security.JWTSecurityConfigurer;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
