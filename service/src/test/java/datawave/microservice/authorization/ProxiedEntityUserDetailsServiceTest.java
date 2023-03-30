@@ -3,7 +3,7 @@ package datawave.microservice.authorization;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import datawave.microservice.authorization.datawave.microservice.authorization.preauth.AuthorizationProxiedEntityPreauthPrincipal;
+import datawave.microservice.authorization.preauth.AuthorizationProxiedEntityPreauthPrincipal;
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.authorization.userdetails.ProxiedEntityUserDetailsService;
 import datawave.security.authorization.CachedDatawaveUserService;

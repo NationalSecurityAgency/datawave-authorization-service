@@ -2,7 +2,7 @@ package datawave.microservice.authorization.userdetails;
 
 import datawave.microservice.authorization.config.AuthorizationAllowedCallersFilter;
 import datawave.microservice.authorization.config.DatawaveSecurityProperties;
-import datawave.microservice.authorization.datawave.microservice.authorization.preauth.AuthorizationProxiedEntityPreauthPrincipal;
+import datawave.microservice.authorization.preauth.AuthorizationProxiedEntityPreauthPrincipal;
 import datawave.microservice.authorization.preauth.ProxiedEntityPreauthPrincipal;
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.security.authorization.AuthorizationException;
