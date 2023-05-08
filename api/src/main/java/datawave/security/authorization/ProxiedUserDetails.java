@@ -20,5 +20,5 @@ public interface ProxiedUserDetails {
     
     List<String> getProxyServers();
     
-    ProxiedUserDetails newInstance(List<DatawaveUser> proxiedUsers);
+    <T extends ProxiedUserDetails> T newInstance(List<DatawaveUser> proxiedUsers);
 }
