@@ -18,4 +18,6 @@ public interface ProxiedUserDetails {
     String getShortName();
     
     List<String> getProxyServers();
+    
+    <T extends ProxiedUserDetails> T newInstance(List<DatawaveUser> proxiedUsers);
 }
