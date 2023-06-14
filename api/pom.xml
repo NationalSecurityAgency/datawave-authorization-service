@@ -17,7 +17,7 @@
         <url>https://github.com/NationalSecurityAgency/datawave-authorization-service</url>
     </scm>
     <properties>
-        <version.guava>31.1-jre</version.guava>
+        <version.guava>32.0.0-jre</version.guava>
         <version.jackson>2.10.1</version.jackson>
         <version.jaxb>2.3.3</version.jaxb>
         <version.jjwt>0.11.2</version.jjwt>
