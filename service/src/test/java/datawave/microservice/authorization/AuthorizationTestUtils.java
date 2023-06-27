@@ -1,8 +1,9 @@
 package datawave.microservice.authorization;
 
-import datawave.microservice.authorization.preauth.ProxiedEntityX509Filter;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.security.authorization.JWTTokenHandler;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -13,9 +14,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import datawave.microservice.authorization.preauth.ProxiedEntityX509Filter;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.security.authorization.JWTTokenHandler;
 
 public class AuthorizationTestUtils {
     

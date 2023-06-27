@@ -1,13 +1,11 @@
 package datawave.microservice.authorization;
 
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
-import datawave.microservice.authorization.preauth.AuthorizationProxiedEntityPreauthPrincipal;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.microservice.authorization.userdetails.ProxiedEntityUserDetailsService;
-import datawave.security.authorization.CachedDatawaveUserService;
-import datawave.security.authorization.SubjectIssuerDNPair;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +23,15 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import datawave.microservice.authorization.preauth.AuthorizationProxiedEntityPreauthPrincipal;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.authorization.userdetails.ProxiedEntityUserDetailsService;
+import datawave.security.authorization.CachedDatawaveUserService;
+import datawave.security.authorization.SubjectIssuerDNPair;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

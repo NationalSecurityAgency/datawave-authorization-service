@@ -1,17 +1,19 @@
 package datawave.microservice.authorization.mock;
 
-import com.google.common.collect.HashMultimap;
-import datawave.security.authorization.DatawaveUser;
-import datawave.security.authorization.DatawaveUser.UserType;
-import datawave.security.authorization.SubjectIssuerDNPair;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
+import static datawave.microservice.authorization.mock.MockDatawaveUserService.CACHE_NAME;
 
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
-import static datawave.microservice.authorization.mock.MockDatawaveUserService.CACHE_NAME;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
+
+import com.google.common.collect.HashMultimap;
+
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.authorization.DatawaveUser.UserType;
+import datawave.security.authorization.SubjectIssuerDNPair;
 
 /**
  * A helper class to allow calls to be cached using Spring annotations. Normally, these could just be methods in {@link MockDatawaveUserService}. However,

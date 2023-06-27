@@ -1,17 +1,18 @@
 package datawave.security.authorization;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import datawave.security.util.ProxiedEntityUtils;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
+import datawave.security.util.ProxiedEntityUtils;
 
 /**
  * A user of a DATAWAVE service. Typically, one or more of these users (a chain where a user called an intermediate service which in turn called us) is

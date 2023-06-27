@@ -1,30 +1,9 @@
 package datawave.microservice.authorization;
 
-import datawave.microservice.authorization.oauth.AuthorizationRequest;
-import datawave.microservice.authorization.oauth.AuthorizedClient;
-import datawave.microservice.authorization.oauth.OAuthProperties;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.security.authorization.AuthorizationException;
-import datawave.security.authorization.CachedDatawaveUserService;
-import datawave.security.authorization.DatawaveUser;
-import datawave.security.authorization.JWTTokenHandler;
-import datawave.security.authorization.SubjectIssuerDNPair;
-import datawave.security.authorization.oauth.OAuthTokenResponse;
-import datawave.security.authorization.oauth.OAuthUserInfo;
-import io.jsonwebtoken.ExpiredJwtException;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
+import static datawave.security.authorization.oauth.OAuthConstants.GRANT_AUTHORIZATION_CODE;
+import static datawave.security.authorization.oauth.OAuthConstants.GRANT_REFRESH_TOKEN;
+import static datawave.security.authorization.oauth.OAuthConstants.RESPONSE_TYPE_CODE;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,9 +16,32 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static datawave.security.authorization.oauth.OAuthConstants.GRANT_AUTHORIZATION_CODE;
-import static datawave.security.authorization.oauth.OAuthConstants.GRANT_REFRESH_TOKEN;
-import static datawave.security.authorization.oauth.OAuthConstants.RESPONSE_TYPE_CODE;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import datawave.microservice.authorization.oauth.AuthorizationRequest;
+import datawave.microservice.authorization.oauth.AuthorizedClient;
+import datawave.microservice.authorization.oauth.OAuthProperties;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.security.authorization.AuthorizationException;
+import datawave.security.authorization.CachedDatawaveUserService;
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.authorization.JWTTokenHandler;
+import datawave.security.authorization.SubjectIssuerDNPair;
+import datawave.security.authorization.oauth.OAuthTokenResponse;
+import datawave.security.authorization.oauth.OAuthUserInfo;
+import io.jsonwebtoken.ExpiredJwtException;
 
 /**
  * Presents the REST operations for the authorization service to implement the OAuth2 code flow.

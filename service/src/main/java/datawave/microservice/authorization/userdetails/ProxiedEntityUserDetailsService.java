@@ -1,14 +1,11 @@
 package datawave.microservice.authorization.userdetails;
 
-import datawave.microservice.authorization.config.AuthorizationAllowedCallersFilter;
-import datawave.microservice.authorization.config.DatawaveSecurityProperties;
-import datawave.microservice.authorization.preauth.AuthorizationProxiedEntityPreauthPrincipal;
-import datawave.microservice.authorization.preauth.ProxiedEntityPreauthPrincipal;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.security.authorization.AuthorizationException;
-import datawave.security.authorization.DatawaveUser;
-import datawave.security.authorization.DatawaveUserService;
-import datawave.security.authorization.SubjectIssuerDNPair;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +16,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import datawave.microservice.authorization.config.AuthorizationAllowedCallersFilter;
+import datawave.microservice.authorization.config.DatawaveSecurityProperties;
+import datawave.microservice.authorization.preauth.AuthorizationProxiedEntityPreauthPrincipal;
+import datawave.microservice.authorization.preauth.ProxiedEntityPreauthPrincipal;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.security.authorization.AuthorizationException;
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.authorization.DatawaveUserService;
+import datawave.security.authorization.SubjectIssuerDNPair;
 
 /**
  * An {@link AuthenticationUserDetailsService} that retrieves user information from a {@link DatawaveUserService} for a set of proxied entity names, and

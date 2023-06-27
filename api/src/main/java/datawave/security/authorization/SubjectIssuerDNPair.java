@@ -1,11 +1,12 @@
 package datawave.security.authorization;
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import datawave.security.util.ProxiedEntityUtils;
 
-import java.io.Serializable;
+import datawave.security.util.ProxiedEntityUtils;
 
 /**
  * A simple pair containing a subject and (optional) issuer DN. The supplied DN values are normalized into a lower-case form with the CN portion first.

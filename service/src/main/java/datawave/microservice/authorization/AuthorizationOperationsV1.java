@@ -1,16 +1,12 @@
 package datawave.microservice.authorization;
 
-import datawave.microservice.authorization.config.AuthorizationsListSupplier;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.microservice.security.util.DnUtils;
-import datawave.security.DnList;
-import datawave.security.authorization.CachedDatawaveUserService;
-import datawave.security.authorization.DatawaveUser;
-import datawave.security.authorization.DatawaveUserInfo;
-import datawave.security.authorization.DatawaveUserV1;
-import datawave.security.authorization.JWTTokenHandler;
-import datawave.user.AuthorizationsListBase;
-import io.swagger.v3.oas.annotations.Parameter;
+import static org.springframework.web.accept.ContentNegotiationStrategy.MEDIA_TYPE_ALL_LIST;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +22,17 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.springframework.web.accept.ContentNegotiationStrategy.MEDIA_TYPE_ALL_LIST;
+import datawave.microservice.authorization.config.AuthorizationsListSupplier;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.security.util.DnUtils;
+import datawave.security.DnList;
+import datawave.security.authorization.CachedDatawaveUserService;
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.authorization.DatawaveUserInfo;
+import datawave.security.authorization.DatawaveUserV1;
+import datawave.security.authorization.JWTTokenHandler;
+import datawave.user.AuthorizationsListBase;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * Presents the REST operations for the authorization service. This version returns a DatawaveUserV1 individually and when encapsulated by a DatawaveUserDetails

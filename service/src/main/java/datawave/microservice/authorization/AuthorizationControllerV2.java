@@ -1,14 +1,9 @@
 package datawave.microservice.authorization;
 
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.security.authorization.CachedDatawaveUserService;
-import datawave.security.authorization.DatawaveUser;
-import datawave.security.authorization.DatawaveUserInfo;
-import datawave.user.AuthorizationsListBase;
-import io.swagger.v3.oas.annotations.ExternalDocumentation;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
+
+import java.util.Collection;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
@@ -21,9 +16,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collection;
-
-import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.security.authorization.CachedDatawaveUserService;
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.authorization.DatawaveUserInfo;
+import datawave.user.AuthorizationsListBase;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Presents the REST operations for the authorization service. This version returns the updated (V2) DatawaveUser

@@ -1,14 +1,16 @@
 package datawave.microservice.authorization.config;
 
-import datawave.microservice.config.security.AllowedCallersFilter;
-import org.springframework.security.web.AuthenticationEntryPoint;
+import java.io.IOException;
+import java.util.regex.Pattern;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.regex.Pattern;
+
+import org.springframework.security.web.AuthenticationEntryPoint;
+
+import datawave.microservice.config.security.AllowedCallersFilter;
 
 public class AuthorizationAllowedCallersFilter extends AllowedCallersFilter {
     private static final Pattern oauthPattern = Pattern.compile("/v\\d*/oauth/.*");

@@ -1,8 +1,8 @@
 package datawave.microservice.authorization.oauth;
 
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-
 import java.io.Serializable;
+
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 
 public class AuthorizationRequest implements Serializable {
     

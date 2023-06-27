@@ -1,17 +1,28 @@
 package datawave.microservice.authorization;
 
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.microservice.config.web.RestClientProperties;
-import datawave.security.authorization.CachedDatawaveUserService;
-import datawave.security.authorization.DatawaveUser;
-import datawave.security.authorization.JWTTokenHandler;
-import datawave.security.authorization.SubjectIssuerDNPair;
-import datawave.security.authorization.oauth.OAuthTokenResponse;
-import datawave.security.authorization.oauth.OAuthUserInfo;
-import datawave.security.util.ProxiedEntityUtils;
+import static datawave.security.authorization.DatawaveUser.UserType.SERVER;
+import static datawave.security.authorization.DatawaveUser.UserType.USER;
+import static datawave.security.authorization.oauth.OAuthConstants.GRANT_AUTHORIZATION_CODE;
+import static datawave.security.authorization.oauth.OAuthConstants.GRANT_REFRESH_TOKEN;
+import static datawave.security.authorization.oauth.OAuthConstants.RESPONSE_TYPE_CODE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.net.ssl.SSLContext;
+
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -36,27 +47,19 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.net.ssl.SSLContext;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 
-import static datawave.security.authorization.DatawaveUser.UserType.SERVER;
-import static datawave.security.authorization.DatawaveUser.UserType.USER;
-import static datawave.security.authorization.oauth.OAuthConstants.GRANT_AUTHORIZATION_CODE;
-import static datawave.security.authorization.oauth.OAuthConstants.GRANT_REFRESH_TOKEN;
-import static datawave.security.authorization.oauth.OAuthConstants.RESPONSE_TYPE_CODE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.config.web.RestClientProperties;
+import datawave.security.authorization.CachedDatawaveUserService;
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.authorization.JWTTokenHandler;
+import datawave.security.authorization.SubjectIssuerDNPair;
+import datawave.security.authorization.oauth.OAuthTokenResponse;
+import datawave.security.authorization.oauth.OAuthUserInfo;
+import datawave.security.util.ProxiedEntityUtils;
 
 public class OAuthOperationsV2TestCommon {
     

@@ -1,14 +1,12 @@
 package datawave.microservice.authorization;
 
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.microservice.cached.CacheInspector;
-import datawave.security.authorization.CachedDatawaveUserService;
-import datawave.security.authorization.DatawaveUser;
-import datawave.security.authorization.JWTTokenHandler;
-import datawave.security.authorization.SubjectIssuerDNPair;
+import static datawave.security.authorization.DatawaveUser.UserType.USER;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.UUID;
+import java.util.function.Function;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,12 +29,16 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.UUID;
-import java.util.function.Function;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 
-import static datawave.security.authorization.DatawaveUser.UserType.USER;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.cached.CacheInspector;
+import datawave.security.authorization.CachedDatawaveUserService;
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.authorization.JWTTokenHandler;
+import datawave.security.authorization.SubjectIssuerDNPair;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
