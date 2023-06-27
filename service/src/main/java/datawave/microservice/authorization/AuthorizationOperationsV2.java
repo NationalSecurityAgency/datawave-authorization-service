@@ -1,12 +1,7 @@
 package datawave.microservice.authorization;
 
-import datawave.microservice.authorization.config.AuthorizationsListSupplier;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.microservice.security.util.DnUtils;
-import datawave.security.authorization.CachedDatawaveUserService;
-import datawave.security.authorization.DatawaveUser;
-import datawave.security.authorization.JWTTokenHandler;
-import io.swagger.v3.oas.annotations.Parameter;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.bus.BusProperties;
 import org.springframework.context.ApplicationContext;
@@ -14,7 +9,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.stream.Collectors;
+import datawave.microservice.authorization.config.AuthorizationsListSupplier;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.security.util.DnUtils;
+import datawave.security.authorization.CachedDatawaveUserService;
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.authorization.JWTTokenHandler;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * Presents the REST operations for the authorization service. This version returns the updated (V2) DatawaveUser

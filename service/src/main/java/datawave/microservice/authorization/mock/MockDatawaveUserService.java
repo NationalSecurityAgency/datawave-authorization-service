@@ -1,17 +1,18 @@
 package datawave.microservice.authorization.mock;
 
+import static datawave.microservice.authorization.mock.MockDatawaveUserService.CACHE_NAME;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
+
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+
 import datawave.microservice.cached.CacheInspector;
 import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.DatawaveUserInfo;
 import datawave.security.authorization.SubjectIssuerDNPair;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.CacheEvict;
-
-import java.util.Collection;
-import java.util.stream.Collectors;
-
-import static datawave.microservice.authorization.mock.MockDatawaveUserService.CACHE_NAME;
 
 /**
  * A "mock" version of the {@link CachedDatawaveUserService} that returns canned results for any user calling.

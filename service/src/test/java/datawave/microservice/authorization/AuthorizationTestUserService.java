@@ -1,21 +1,23 @@
 package datawave.microservice.authorization;
 
-import datawave.security.authorization.AuthorizationException;
-import datawave.security.authorization.CachedDatawaveUserService;
-import datawave.security.authorization.DatawaveUser;
-import datawave.security.authorization.DatawaveUserInfo;
-import datawave.security.authorization.SubjectIssuerDNPair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.EnableCaching;
+import static java.util.stream.Collectors.toList;
+
+import static datawave.security.authorization.DatawaveUser.UserType.USER;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import static datawave.security.authorization.DatawaveUser.UserType.USER;
-import static java.util.stream.Collectors.toList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.EnableCaching;
+
+import datawave.security.authorization.AuthorizationException;
+import datawave.security.authorization.CachedDatawaveUserService;
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.authorization.DatawaveUserInfo;
+import datawave.security.authorization.SubjectIssuerDNPair;
 
 @EnableCaching
 @CacheConfig(cacheNames = "datawaveUsers-IT")

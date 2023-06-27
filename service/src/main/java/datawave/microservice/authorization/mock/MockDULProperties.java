@@ -1,10 +1,10 @@
 package datawave.microservice.authorization.mock;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @EnableConfigurationProperties(MockDULProperties.class)
 @ConfigurationProperties(prefix = "mock.users")

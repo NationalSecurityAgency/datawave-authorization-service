@@ -1,10 +1,11 @@
 package datawave.microservice.authorization.config;
 
-import datawave.user.AuthorizationsListBase;
-import datawave.user.DefaultAuthorizationsList;
+import java.util.function.Supplier;
+
 import org.springframework.stereotype.Component;
 
-import java.util.function.Supplier;
+import datawave.user.AuthorizationsListBase;
+import datawave.user.DefaultAuthorizationsList;
 
 @Component
 public class AuthorizationsListSupplier implements Supplier<AuthorizationsListBase<?>> {

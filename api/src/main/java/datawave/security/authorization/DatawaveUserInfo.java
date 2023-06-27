@@ -1,10 +1,11 @@
 package datawave.security.authorization;
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import datawave.security.authorization.DatawaveUser.UserType;
 
-import java.io.Serializable;
+import datawave.security.authorization.DatawaveUser.UserType;
 
 /**
  * A holder object that contains basic information about a {@link DatawaveUser}. This object is used to return information about cached user objects, where a

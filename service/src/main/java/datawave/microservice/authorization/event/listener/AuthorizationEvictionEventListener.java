@@ -1,6 +1,5 @@
 package datawave.microservice.authorization.event.listener;
 
-import datawave.security.authorization.CachedDatawaveUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +8,8 @@ import org.springframework.cloud.bus.ServiceMatcher;
 import org.springframework.cloud.bus.event.AuthorizationEvictionEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+
+import datawave.security.authorization.CachedDatawaveUserService;
 
 /**
  * A listener for {@link AuthorizationEvictionEvent}s on the message bus. Upon receipt, the designated users are evicted from the authorization cache by

@@ -1,6 +1,7 @@
 package datawave.microservice.authorization;
 
-import datawave.microservice.config.web.RestClientProperties;
+import javax.net.ssl.SSLContext;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -16,7 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
-import javax.net.ssl.SSLContext;
+import datawave.microservice.config.web.RestClientProperties;
 
 // OAuthServiceTest profile to configure AuthorizationTestUserService with userMap
 // http profile to use application-http.yml to test that allowedCaller not enforced for OAuth

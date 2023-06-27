@@ -1,17 +1,13 @@
 package datawave.microservice.authorization;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.google.common.collect.Multimap;
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.microservice.cached.CacheInspector;
-import datawave.security.authorization.CachedDatawaveUserService;
-import datawave.security.authorization.DatawaveUser;
-import datawave.security.authorization.JWTTokenHandler;
-import datawave.security.authorization.SubjectIssuerDNPair;
+import static datawave.security.authorization.DatawaveUser.UserType.USER;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.UUID;
+import java.util.function.Function;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,13 +36,19 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.UUID;
-import java.util.function.Function;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.google.common.collect.Multimap;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 
-import static datawave.security.authorization.DatawaveUser.UserType.USER;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.cached.CacheInspector;
+import datawave.security.authorization.CachedDatawaveUserService;
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.authorization.JWTTokenHandler;
+import datawave.security.authorization.SubjectIssuerDNPair;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

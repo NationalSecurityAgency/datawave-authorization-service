@@ -1,13 +1,14 @@
 package datawave.microservice.authorization.mock;
 
-import datawave.microservice.cached.CacheInspector;
+import java.util.function.Function;
+
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import java.util.function.Function;
+import datawave.microservice.cached.CacheInspector;
 
 /**
  * Configuration to supply beans for the {@link MockDatawaveUserService}. This configuration is only active when the "mock" profile is selected. This profile is

@@ -1,10 +1,5 @@
 package datawave.microservice.authorization.config;
 
-import datawave.microservice.authorization.jwt.JWTAuthenticationFilter;
-import datawave.microservice.authorization.jwt.JWTAuthenticationProvider;
-import datawave.microservice.authorization.preauth.AuthorizationProxiedEntityX509Filter;
-import datawave.microservice.config.security.AllowedCallersFilter;
-import datawave.microservice.config.security.JWTSecurityConfigurer;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +9,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+
+import datawave.microservice.authorization.jwt.JWTAuthenticationFilter;
+import datawave.microservice.authorization.jwt.JWTAuthenticationProvider;
+import datawave.microservice.authorization.preauth.AuthorizationProxiedEntityX509Filter;
+import datawave.microservice.config.security.AllowedCallersFilter;
+import datawave.microservice.config.security.JWTSecurityConfigurer;
 
 /**
  * <p>

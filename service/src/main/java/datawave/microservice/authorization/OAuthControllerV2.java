@@ -1,11 +1,10 @@
 package datawave.microservice.authorization;
 
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.security.authorization.oauth.OAuthTokenResponse;
-import datawave.security.authorization.oauth.OAuthUserInfo;
-import io.swagger.v3.oas.annotations.ExternalDocumentation;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.IOException;
+import java.util.Collection;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Collection;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.security.authorization.oauth.OAuthTokenResponse;
+import datawave.security.authorization.oauth.OAuthUserInfo;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Presents the REST operations for the authorization service to implement the OAuth2 code flow.
