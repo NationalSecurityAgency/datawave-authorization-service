@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.cache.CacheType;
 import org.springframework.boot.test.autoconfigure.core.AutoConfigureCache;
@@ -149,7 +150,8 @@ public class AuthorizeHttpTest {
     @Configuration
     public static class AuthorizationServiceTestConfiguration {
         @Bean
-        public CachedDatawaveUserService cachedDatawaveUserService(CacheManager cacheManager, Function<CacheManager,CacheInspector> cacheInspectorFactory) {
+        public CachedDatawaveUserService cachedDatawaveUserService(CacheManager cacheManager,
+                        @Qualifier("cacheInspectorFactory") Function<CacheManager,CacheInspector> cacheInspectorFactory) {
             return new AuthorizationTestUserService(Collections.emptyMap(), true);
         }
         
