@@ -55,8 +55,11 @@ public class AuthorizationControllerV2 {
     @Operation(summary = "Lists the effective Accumulo user authorizations for the calling user.")
     @RequestMapping(path = "/listEffectiveAuthorizations", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE,
             MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, PROTOSTUFF_VALUE, MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
-    public AuthorizationsListBase<?> listEffectiveAuthorizations(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
-        return authOperations.listEffectiveAuthorizations(currentUser);
+    public AuthorizationsListBase<?> listEffectiveAuthorizations(
+                    @Parameter(description = "Whether the request should be federated to downstream services.") @RequestParam(
+                                    name = "includeRemoteServices") boolean federate,
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) {
+        return authOperations.listEffectiveAuthorizations(currentUser, federate);
     }
     
     /**
