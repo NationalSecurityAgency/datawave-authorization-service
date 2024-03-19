@@ -1,6 +1,7 @@
 package datawave.microservice.authorization;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +26,8 @@ public class AuthorizationOperationsV2 extends AuthorizationOperationsV1 {
     
     public AuthorizationOperationsV2(JWTTokenHandler tokenHandler, CachedDatawaveUserService cachedDatawaveUserService, ApplicationContext appCtx,
                     BusProperties busProperties, AuthorizationsListSupplier authorizationsListSupplier, DnUtils dnUtils,
-                    @Autowired(required = false) List<UserOperations> federatedUserOperations, DatawaveUserDetailsFactory datawaveUserDetailsFactory) {
-        super(tokenHandler, cachedDatawaveUserService, appCtx, busProperties, authorizationsListSupplier, dnUtils, federatedUserOperations,
+                    Set<UserOperations> registeredFederatedUserOperations, DatawaveUserDetailsFactory datawaveUserDetailsFactory) {
+        super(tokenHandler, cachedDatawaveUserService, appCtx, busProperties, authorizationsListSupplier, dnUtils, registeredFederatedUserOperations,
                         datawaveUserDetailsFactory);
     }
     

@@ -4,8 +4,11 @@ import static org.springframework.web.accept.ContentNegotiationStrategy.MEDIA_TY
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -54,22 +57,20 @@ public class AuthorizationOperationsV1 {
     
     protected final DnUtils dnUtils;
     
-    protected final List<UserOperations> federatedUserOperationsList = new ArrayList<>();
+    protected final Set<UserOperations> registeredFederatedUserOperations;
     
     protected final DatawaveUserDetailsFactory datawaveUserDetailsFactory;
     
     public AuthorizationOperationsV1(JWTTokenHandler tokenHandler, CachedDatawaveUserService cachedDatawaveUserService, ApplicationContext appCtx,
                     BusProperties busProperties, AuthorizationsListSupplier authorizationsListSupplier, DnUtils dnUtils,
-                    @Autowired(required = false) List<UserOperations> federatedUserOperationsList, DatawaveUserDetailsFactory datawaveUserDetailsFactory) {
+                    Set<UserOperations> registeredFederatedUserOperations, DatawaveUserDetailsFactory datawaveUserDetailsFactory) {
         this.tokenHandler = tokenHandler;
         this.cachedDatawaveUserService = cachedDatawaveUserService;
         this.appCtx = appCtx;
         this.busProperties = busProperties;
         this.authorizationsListSupplier = authorizationsListSupplier;
         this.dnUtils = dnUtils;
-        if (federatedUserOperationsList != null) {
-            this.federatedUserOperationsList.addAll(federatedUserOperationsList);
-        }
+        this.registeredFederatedUserOperations = registeredFederatedUserOperations;
         this.datawaveUserDetailsFactory = datawaveUserDetailsFactory;
     }
     
@@ -95,7 +96,7 @@ public class AuthorizationOperationsV1 {
         String name = dnUtils.getShortName(currentUser.getPrimaryUser().getName());
         
         if (federate) {
-            for (UserOperations federatedUserOperations : federatedUserOperationsList) {
+            for (UserOperations federatedUserOperations : registeredFederatedUserOperations) {
                 try {
                     DatawaveUserDetails federatedUserDetails = federatedUserOperations.getRemoteUser(currentUser);
                     currentUser = AuthorizationsUtil.mergeProxiedUserDetails(currentUser, federatedUserDetails);
@@ -127,7 +128,7 @@ public class AuthorizationOperationsV1 {
         
         // if we have any remote services configured, then flush those credentials as well
         if (federate) {
-            for (UserOperations federatedUserOperations : federatedUserOperationsList) {
+            for (UserOperations federatedUserOperations : registeredFederatedUserOperations) {
                 try {
                     federatedUserOperations.flushCachedCredentials(currentUser);
                 } catch (Exception e) {
