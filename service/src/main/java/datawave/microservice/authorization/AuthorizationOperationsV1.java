@@ -133,7 +133,7 @@ public class AuthorizationOperationsV1 {
                     federatedUserOperations.flushCachedCredentials(currentUser);
                 } catch (Exception e) {
                     log.error("Failed to flush user from remote user service", e);
-                    response.addMessage("Unable to user from remote user service");
+                    response.addMessage("Unable to flush user from remote user service");
                     response.addException(e);
                 }
             }
