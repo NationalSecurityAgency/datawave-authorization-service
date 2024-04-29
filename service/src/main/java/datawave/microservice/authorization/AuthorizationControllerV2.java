@@ -21,6 +21,7 @@ import datawave.security.authorization.CachedDatawaveUserService;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.DatawaveUserInfo;
 import datawave.user.AuthorizationsListBase;
+import datawave.webservice.result.GenericResponse;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -60,6 +61,16 @@ public class AuthorizationControllerV2 {
                                     name = "includeRemoteServices") boolean federate,
                     @AuthenticationPrincipal DatawaveUserDetails currentUser) {
         return authOperations.listEffectiveAuthorizations(currentUser, federate);
+    }
+    
+    @Operation(summary = "Clears any cached credentials for the calling user.")
+    @RequestMapping(path = "/flushCachedCredentials", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE,
+            MediaType.TEXT_XML_VALUE, PROTOSTUFF_VALUE, MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
+    public GenericResponse<String> flushCachedCredentials(
+                    @Parameter(description = "Whether the request should be federated to downstream services.") @RequestParam(
+                                    name = "includeRemoteServices") boolean federate,
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) {
+        return authOperations.flushCachedCredentials(currentUser, federate);
     }
     
     /**
