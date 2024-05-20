@@ -2,9 +2,13 @@ package datawave.microservice.authorization;
 
 import static org.springframework.web.accept.ContentNegotiationStrategy.MEDIA_TYPE_ALL_LIST;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -16,14 +20,14 @@ import org.springframework.cloud.bus.event.AuthorizationEvictionEvent.Type;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import datawave.microservice.authorization.config.AuthorizationsListSupplier;
 import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetailsFactory;
+import datawave.microservice.authorization.util.AuthorizationsUtil;
 import datawave.microservice.security.util.DnUtils;
 import datawave.security.DnList;
 import datawave.security.authorization.CachedDatawaveUserService;
@@ -31,8 +35,10 @@ import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.DatawaveUserInfo;
 import datawave.security.authorization.DatawaveUserV1;
 import datawave.security.authorization.JWTTokenHandler;
+import datawave.security.authorization.ProxiedUserDetails;
+import datawave.security.authorization.UserOperations;
 import datawave.user.AuthorizationsListBase;
-import io.swagger.v3.oas.annotations.Parameter;
+import datawave.webservice.result.GenericResponse;
 
 /**
  * Presents the REST operations for the authorization service. This version returns a DatawaveUserV1 individually and when encapsulated by a DatawaveUserDetails
@@ -51,15 +57,21 @@ public class AuthorizationOperationsV1 {
     
     protected final DnUtils dnUtils;
     
-    @Autowired
+    protected final Set<UserOperations> registeredFederatedUserOperations;
+    
+    protected final DatawaveUserDetailsFactory datawaveUserDetailsFactory;
+    
     public AuthorizationOperationsV1(JWTTokenHandler tokenHandler, CachedDatawaveUserService cachedDatawaveUserService, ApplicationContext appCtx,
-                    BusProperties busProperties, AuthorizationsListSupplier authorizationsListSupplier, DnUtils dnUtils) {
+                    BusProperties busProperties, AuthorizationsListSupplier authorizationsListSupplier, DnUtils dnUtils,
+                    Set<UserOperations> registeredFederatedUserOperations, DatawaveUserDetailsFactory datawaveUserDetailsFactory) {
         this.tokenHandler = tokenHandler;
         this.cachedDatawaveUserService = cachedDatawaveUserService;
         this.appCtx = appCtx;
         this.busProperties = busProperties;
         this.authorizationsListSupplier = authorizationsListSupplier;
         this.dnUtils = dnUtils;
+        this.registeredFederatedUserOperations = registeredFederatedUserOperations;
+        this.datawaveUserDetailsFactory = datawaveUserDetailsFactory;
     }
     
     // Convert default DatawaveUser (v2) to DatawaveUserV1 for backward compatability of v1 operation
@@ -72,16 +84,28 @@ public class AuthorizationOperationsV1 {
         return new DatawaveUserDetails(proxiedUsersV1, currentUser.getCreationTime());
     }
     
-    public String user(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
+    public String user(DatawaveUserDetails currentUser) {
         DatawaveUserDetails transformedUser = transformCurrentUser(currentUser);
         return tokenHandler.createTokenFromUsers(transformedUser.getUsername(), transformedUser.getProxiedUsers());
     }
     
-    public AuthorizationsListBase<?> listEffectiveAuthorizations(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
+    public AuthorizationsListBase<?> listEffectiveAuthorizations(DatawaveUserDetails currentUser, boolean federate) {
         final AuthorizationsListBase<?> list = authorizationsListSupplier.get();
         
         // Find out who/what called this method
         String name = dnUtils.getShortName(currentUser.getPrimaryUser().getName());
+        
+        if (federate) {
+            for (UserOperations federatedUserOperations : registeredFederatedUserOperations) {
+                try {
+                    DatawaveUserDetails federatedUserDetails = federatedUserOperations.getRemoteUser(currentUser);
+                    currentUser = AuthorizationsUtil.mergeProxiedUserDetails(currentUser, federatedUserDetails);
+                } catch (Exception e) {
+                    log.error("Failed to lookup users from remote user service", e);
+                    list.addMessage("Failed to lookup user from remote service: " + e.getMessage());
+                }
+            }
+        }
         
         // Add the user DN's auths into the authorization list
         DatawaveUser primaryUser = currentUser.getPrimaryUser();
@@ -98,10 +122,32 @@ public class AuthorizationOperationsV1 {
         return list;
     }
     
+    public GenericResponse<String> flushCachedCredentials(ProxiedUserDetails currentUser, boolean federate) {
+        GenericResponse<String> response = new GenericResponse<>();
+        log.info("Flushing credentials for " + currentUser + " from the cache.");
+        
+        // if we have any remote services configured, then flush those credentials as well
+        if (federate) {
+            for (UserOperations federatedUserOperations : registeredFederatedUserOperations) {
+                try {
+                    federatedUserOperations.flushCachedCredentials(currentUser);
+                } catch (Exception e) {
+                    log.error("Failed to flush user from remote user service", e);
+                    response.addMessage("Unable to flush user from remote user service");
+                    response.addException(e);
+                }
+            }
+        }
+        
+        response.setResult(evictUser(currentUser.getPrimaryUser().getDn().subjectDN()));
+        
+        return response;
+    }
+    
     /**
      * Returns the {@link DatawaveUserDetails} that represents the authenticated calling user.
      */
-    public DatawaveUserDetails hello(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
+    public DatawaveUserDetails hello(DatawaveUserDetails currentUser) {
         return transformCurrentUser(currentUser);
     }
     
@@ -115,7 +161,7 @@ public class AuthorizationOperationsV1 {
      * @return status indicating whether or not any users were evicted from the authentication cache
      * @see CachedDatawaveUserService#evict(String)
      */
-    public String evictUser(@Parameter(description = "The username (e.g., subjectDn<issuerDn>) to evict") @RequestParam String username) {
+    public String evictUser(String username) {
         appCtx.publishEvent(new AuthorizationEvictionEvent(this, busProperties.getId(), Type.USER, username));
         return cachedDatawaveUserService.evict(username);
     }
@@ -128,7 +174,7 @@ public class AuthorizationOperationsV1 {
      * @return status indicating whether or not any users were evicted from the authentication cache
      * @see CachedDatawaveUserService#evictMatching(String)
      */
-    public String evictUsersMatching(@Parameter(description = "A substring to search for in user names to evict") @RequestParam String substring) {
+    public String evictUsersMatching(String substring) {
         appCtx.publishEvent(new AuthorizationEvictionEvent(this, busProperties.getId(), Type.PARTIAL, substring));
         return cachedDatawaveUserService.evictMatching(substring);
     }
@@ -156,7 +202,7 @@ public class AuthorizationOperationsV1 {
      * @return the cached user whose {@link DatawaveUser#getName()} is name, or null if no such user is cached
      * @see CachedDatawaveUserService#list(String)
      */
-    public DatawaveUser listCachedUser(@Parameter(description = "The username (e.g., subjectDn<issuerDn>) to evict") @RequestParam String username) {
+    public DatawaveUser listCachedUser(String username) {
         DatawaveUser user = cachedDatawaveUserService.list(username);
         return user == null ? null : new DatawaveUserV1(user);
     }
@@ -171,8 +217,7 @@ public class AuthorizationOperationsV1 {
      * @return the matching cached users, ifany
      * @see CachedDatawaveUserService#listMatching(String)
      */
-    public Collection<? extends DatawaveUserInfo> listCachedUsersMatching(
-                    @Parameter(description = "A substring to search for in user names to list") @RequestParam String substring) {
+    public Collection<? extends DatawaveUserInfo> listCachedUsersMatching(String substring) {
         return cachedDatawaveUserService.listMatching(substring);
     }
     

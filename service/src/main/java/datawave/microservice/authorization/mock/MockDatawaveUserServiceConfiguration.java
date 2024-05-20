@@ -2,6 +2,7 @@ package datawave.microservice.authorization.mock;
 
 import java.util.function.Function;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +21,7 @@ import datawave.microservice.cached.CacheInspector;
 public class MockDatawaveUserServiceConfiguration {
     @Bean
     public MockDatawaveUserService mockDatawaveUserService(MockDatawaveUserLookup mockDatawaveUserLookup, CacheManager cacheManager,
-                    Function<CacheManager,CacheInspector> cacheInspectorFactory) {
+                    @Qualifier("cacheInspectorFactory") Function<CacheManager,CacheInspector> cacheInspectorFactory) {
         return new MockDatawaveUserService(mockDatawaveUserLookup, cacheInspectorFactory.apply(cacheManager));
     }
     
