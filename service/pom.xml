@@ -4,11 +4,11 @@
     <parent>
         <groupId>gov.nsa.datawave.microservice</groupId>
         <artifactId>datawave-microservice-service-parent</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.0.0</version>
         <relativePath>../../../microservice-service-parent/pom.xml</relativePath>
     </parent>
     <artifactId>authorization-service</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0</version>
     <description>DATAWAVE Authorization Microservice</description>
     <url>https://code.nsa.gov/datawave-authorization-service</url>
     <scm>
@@ -19,10 +19,10 @@
     </scm>
     <properties>
         <start-class>datawave.microservice.authorization.AuthorizationService</start-class>
-        <version.authorization-api>4.0.0-SNAPSHOT</version.authorization-api>
+        <version.authorization-api>4.0.0</version.authorization-api>
         <version.jaxb>2.3.3</version.jaxb>
-        <version.microservice.hazelcast-client>4.0.0-SNAPSHOT</version.microservice.hazelcast-client>
-        <version.microservice.starter>4.0.0-SNAPSHOT</version.microservice.starter>
+        <version.microservice.hazelcast-client>4.0.0</version.microservice.hazelcast-client>
+        <version.microservice.starter>4.0.0</version.microservice.starter>
         <version.zookeeper>3.8.0</version.zookeeper>
     </properties>
     <dependencyManagement>
