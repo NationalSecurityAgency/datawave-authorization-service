@@ -3,7 +3,8 @@ package datawave.microservice.authorization.oauth;
 import java.io.Serializable;
 
 public class AuthorizedClient implements Serializable {
-    
+    private static final long serialVersionUID = -270281918896008012L;
+
     private String client_id;
     private String client_name;
     private String client_secret;
