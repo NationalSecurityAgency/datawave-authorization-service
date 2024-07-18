@@ -19,6 +19,8 @@ import datawave.security.util.ProxiedEntityUtils;
  * represented with a DatawavePrincipal.
  */
 public class DatawaveUser implements Serializable {
+    private static final long serialVersionUID = -6676807246749142999L;
+
     public enum UserType {
         USER, SERVER
     }
