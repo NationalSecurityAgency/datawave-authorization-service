@@ -14,6 +14,8 @@ import datawave.security.authorization.DatawaveUser.UserType;
  * @see DatawaveUser
  */
 public class DatawaveUserInfo implements Serializable {
+    private static final long serialVersionUID = 6644439736099548284L;
+
     private final SubjectIssuerDNPair dn;
     private final UserType userType;
     private final long creationTime;

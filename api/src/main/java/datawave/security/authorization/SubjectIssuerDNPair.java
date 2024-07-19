@@ -12,6 +12,8 @@ import datawave.security.util.ProxiedEntityUtils;
  * A simple pair containing a subject and (optional) issuer DN. The supplied DN values are normalized into a lower-case form with the CN portion first.
  */
 public class SubjectIssuerDNPair implements Serializable {
+    private static final long serialVersionUID = -7558558154126871405L;
+
     private final String subjectDN;
     private final String issuerDN;
     
