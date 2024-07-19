@@ -13,7 +13,7 @@ import datawave.security.util.ProxiedEntityUtils;
  */
 public class SubjectIssuerDNPair implements Serializable {
     private static final long serialVersionUID = -7558558154126871405L;
-
+    
     private final String subjectDN;
     private final String issuerDN;
     
