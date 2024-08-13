@@ -57,8 +57,8 @@ public class AuthorizationControllerV1 {
     @RequestMapping(path = "/listEffectiveAuthorizations", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE,
             MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, PROTOSTUFF_VALUE, MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
     public AuthorizationsListBase<?> listEffectiveAuthorizations(
-                    @Parameter(description = "Whether the request should be federated to downstream services.") @RequestParam(
-                                    name = "includeRemoteServices", defaultValue = "true", required = false) boolean federate,
+                    @Parameter(description = "Whether the request should be federated to downstream services.") @RequestParam(name = "includeRemoteServices",
+                                    defaultValue = "true", required = false) boolean federate,
                     @AuthenticationPrincipal DatawaveUserDetails currentUser) {
         return authOperations.listEffectiveAuthorizations(currentUser, federate);
     }
