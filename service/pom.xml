@@ -8,7 +8,7 @@
         <relativePath>../../../microservice-service-parent/pom.xml</relativePath>
     </parent>
     <artifactId>authorization-service</artifactId>
-    <version>4.0.2-SNAPSHOT</version>
+    <version>4.0.4-SNAPSHOT</version>
     <description>DATAWAVE Authorization Microservice</description>
     <url>https://code.nsa.gov/datawave-authorization-service</url>
     <scm>
@@ -19,9 +19,9 @@
     </scm>
     <properties>
         <start-class>datawave.microservice.authorization.AuthorizationService</start-class>
-        <version.datawave.authorization-api>4.0.0</version.datawave.authorization-api>
-        <version.datawave.hazelcast-client>4.0.1</version.datawave.hazelcast-client>
-        <version.datawave.starter>4.0.1</version.datawave.starter>
+        <version.datawave.authorization-api>4.0.1</version.datawave.authorization-api>
+        <version.datawave.hazelcast-client>4.0.2</version.datawave.hazelcast-client>
+        <version.datawave.starter>4.0.2</version.datawave.starter>
         <version.jaxb>2.3.3</version.jaxb>
         <version.zookeeper>3.8.0</version.zookeeper>
     </properties>

@@ -6,7 +6,7 @@ import datawave.microservice.authorization.user.DatawaveUserDetails;
 
 public class AuthorizationRequest implements Serializable {
     private static final long serialVersionUID = -6916962468855241150L;
-
+    
     private DatawaveUserDetails datawaveUserDetails;
     private AuthorizedClient authorizedClient;
     private String redirect_uri;
