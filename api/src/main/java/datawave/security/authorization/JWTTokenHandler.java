@@ -106,7 +106,7 @@ public class JWTTokenHandler {
                 .setIssuer(issuer)
                 .setExpiration(expirationDate)
                 .claim(claimName, users)
-                .signWith(SignatureAlgorithm.RS512, signingKey)
+                .signWith(signingKey, SignatureAlgorithm.RS512)
                 .compressWith(CompressionCodecs.DEFLATE)
                 .compact();
         // @formatter:on
@@ -127,7 +127,7 @@ public class JWTTokenHandler {
     
     public Collection<DatawaveUser> createUsersFromToken(String token, String claimName) {
         logger.trace("Attempting to parse JWT {}", token);
-        Jws<Claims> claimsJws = Jwts.parser().setSigningKey(signatureCheckKey).parseClaimsJws(token);
+        Jws<Claims> claimsJws = Jwts.parserBuilder().setSigningKey(signatureCheckKey).build().parseClaimsJws(token);
         Claims claims = claimsJws.getBody();
         logger.trace("Resulting claims: {}", claims);
         List<?> principalsClaim = claims.get(claimName, List.class);
