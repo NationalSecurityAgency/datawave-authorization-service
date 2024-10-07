@@ -10,11 +10,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.impl.lang.LegacyServices;
-import io.jsonwebtoken.impl.lang.Services;
-import io.jsonwebtoken.io.Serializer;
-import io.jsonwebtoken.lang.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,10 +19,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.CompressionCodecs;
 import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.DefaultJwtBuilder;
+import io.jsonwebtoken.impl.lang.LegacyServices;
+import io.jsonwebtoken.impl.lang.Services;
 import io.jsonwebtoken.io.SerializationException;
+import io.jsonwebtoken.io.Serializer;
+import io.jsonwebtoken.lang.Assert;
 
 /**
  * Converts between a String encoded JSON Web Token and a collection of {@link DatawaveUser}s.
@@ -155,19 +155,11 @@ public class JWTTokenHandler {
 }
 
 /*
-
-Finished going through all 28 submodules and replacing their deprecated calls
-as of now, I have 10 pr's up replacing different calls. All are passing, I'll send you the list.
-There are 5 submodules that still have deprecated call relating to In memory accumulo and other interconnected stuff,
-    That's what I'm going to focus on next.
-    - - core/in-memory-accumulo ***Replace test cases with mini-accumulo***, we'll try to get rid of actual reference to in-memory-accumulo
-    - - microservices/services/accumulo
-    - - microservices/services/authorization - I have a comment about this one on the PR, I'm not sure if anything will need to be updated on the Accumulo end or not.
-    - - microservices/services/query-metrics
-    - - microservices/starters/datawave
-
+ * 
+ * Finished going through all 28 submodules and replacing their deprecated calls as of now, I have 10 pr's up replacing different calls. All are passing, I'll
+ * send you the list. There are 5 submodules that still have deprecated call relating to In memory accumulo and other interconnected stuff, That's what I'm
+ * going to focus on next. - - core/in-memory-accumulo ***Replace test cases with mini-accumulo***, we'll try to get rid of actual reference to
+ * in-memory-accumulo - - microservices/services/accumulo - - microservices/services/authorization - I have a comment about this one on the PR, I'm not sure if
+ * anything will need to be updated on the Accumulo end or not. - - microservices/services/query-metrics - - microservices/starters/datawave
+ * 
  */
-
-
-
-
