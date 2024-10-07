@@ -6,9 +6,15 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.impl.lang.LegacyServices;
+import io.jsonwebtoken.impl.lang.Services;
+import io.jsonwebtoken.io.Serializer;
+import io.jsonwebtoken.lang.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +106,17 @@ public class JWTTokenHandler {
     public String createTokenFromUsers(String username, Collection<? extends DatawaveUser> users, String claimName, Date expirationDate) {
         logger.trace("Creating new JWT to expire at {} for users {}", expirationDate, users);
         // @formatter:off
-        return new CustomJWTBuilder(objectMapper)
+        return new DefaultJwtBuilder()
+                .serializeToJsonWith(new Serializer<Map<String,?>>() {
+                    @Override
+                    public byte[] serialize(Map<String,?> map) throws SerializationException {
+                        try {
+                            return objectMapper.writeValueAsBytes(map);
+                        } catch (JsonProcessingException e) {
+                            throw new SerializationException(e.getMessage(), e);
+                        }
+                    }
+                })
                 .setSubject(username)
                 .setAudience("DATAWAVE")
                 .setIssuer(issuer)
@@ -136,21 +152,22 @@ public class JWTTokenHandler {
         }
         return principalsClaim.stream().map(obj -> objectMapper.convertValue(obj, DatawaveUser.class)).collect(Collectors.toList());
     }
-    
-    private class CustomJWTBuilder extends DefaultJwtBuilder {
-        private final ObjectMapper objectMapper;
-        
-        private CustomJWTBuilder(ObjectMapper objectMapper) {
-            this.objectMapper = objectMapper;
-        }
-        
-        @Override
-        protected byte[] toJson(Object object) throws SerializationException {
-            try {
-                return objectMapper.writeValueAsBytes(object);
-            } catch (JsonProcessingException e) {
-                throw new SerializationException(e.getMessage(), e);
-            }
-        }
-    }
 }
+
+/*
+
+Finished going through all 28 submodules and replacing their deprecated calls
+as of now, I have 10 pr's up replacing different calls. All are passing, I'll send you the list.
+There are 5 submodules that still have deprecated call relating to In memory accumulo and other interconnected stuff,
+    That's what I'm going to focus on next.
+    - - core/in-memory-accumulo ***Replace test cases with mini-accumulo***, we'll try to get rid of actual reference to in-memory-accumulo
+    - - microservices/services/accumulo
+    - - microservices/services/authorization - I have a comment about this one on the PR, I'm not sure if anything will need to be updated on the Accumulo end or not.
+    - - microservices/services/query-metrics
+    - - microservices/starters/datawave
+
+ */
+
+
+
+
