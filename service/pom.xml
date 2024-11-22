@@ -20,10 +20,10 @@
     <properties>
         <start-class>datawave.microservice.authorization.AuthorizationService</start-class>
         <version.datawave.authorization-api>4.0.1</version.datawave.authorization-api>
+        <version.datawave.base-rest-responses>4.0.0</version.datawave.base-rest-responses>
         <version.datawave.common-utils>3.0.0</version.datawave.common-utils>
         <version.datawave.hazelcast-client>4.0.2</version.datawave.hazelcast-client>
         <version.datawave.starter>4.0.2</version.datawave.starter>
-        <version.datwave.base-rest-responses>4.0.0</version.datwave.base-rest-responses>
         <version.guava>28.1-jre</version.guava>
         <version.jaxb>2.3.3</version.jaxb>
         <version.swagger.v3>2.2.0</version.swagger.v3>
@@ -90,7 +90,7 @@
         <dependency>
             <groupId>gov.nsa.datawave.microservice</groupId>
             <artifactId>base-rest-responses</artifactId>
-            <version>${version.datwave.base-rest-responses}</version>
+            <version>${version.datawave.base-rest-responses}</version>
         </dependency>
         <dependency>
             <groupId>gov.nsa.datawave.microservice</groupId>
