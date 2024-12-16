@@ -24,7 +24,7 @@
         <version.datawave.common-utils>3.0.0</version.datawave.common-utils>
         <version.datawave.hazelcast-client>4.0.2</version.datawave.hazelcast-client>
         <version.datawave.starter>4.0.2</version.datawave.starter>
-        <version.guava>28.1-jre</version.guava>
+        <version.guava>31.1-jre</version.guava>
         <version.jaxb>2.3.3</version.jaxb>
         <version.swagger.v3>2.2.0</version.swagger.v3>
         <version.zookeeper>3.8.0</version.zookeeper>
