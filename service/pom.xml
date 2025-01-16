@@ -27,7 +27,7 @@
         <version.guava>31.1-jre</version.guava>
         <version.jaxb>2.3.3</version.jaxb>
         <version.swagger.v3>2.2.0</version.swagger.v3>
-        <version.zookeeper>3.8.0</version.zookeeper>
+        <version.zookeeper>3.8.2</version.zookeeper>
     </properties>
     <dependencyManagement>
         <dependencies>
