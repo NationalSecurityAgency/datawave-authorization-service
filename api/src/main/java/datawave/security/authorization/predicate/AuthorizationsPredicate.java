@@ -2,10 +2,11 @@ package datawave.security.authorization.predicate;
 
 import java.util.function.Predicate;
 
+import org.apache.accumulo.access.AccessEvaluator;
+import org.apache.accumulo.access.AccessExpression;
+import org.apache.accumulo.access.InvalidAccessExpressionException;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.ColumnVisibility;
-import org.apache.accumulo.core.security.VisibilityEvaluator;
-import org.apache.accumulo.core.security.VisibilityParseException;
 
 /**
  * This is a predicate that will test the auths against a specified visibility (as defined by accumulo's ColumnVisibility). In addition to the visibility, one
@@ -26,10 +27,10 @@ public class AuthorizationsPredicate implements Predicate<Authorizations> {
     public boolean test(Authorizations auths) {
         // match the visibility against the auths.
         ColumnVisibility vis = getVisibility();
-        VisibilityEvaluator ve = new VisibilityEvaluator(auths);
+        AccessEvaluator ae = AccessEvaluator.of(auths.toAccessAuthorizations());
         try {
-            return (ve.evaluate(vis));
-        } catch (VisibilityParseException e) {
+            return (ae.canAccess(AccessExpression.of(vis.getExpression())));
+        } catch (InvalidAccessExpressionException e) {
             throw new RuntimeException(e);
         }
     }
