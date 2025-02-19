@@ -4,11 +4,11 @@
     <parent>
         <groupId>gov.nsa.datawave.microservice</groupId>
         <artifactId>datawave-microservice-parent</artifactId>
-        <version>4.0.1-depfix</version>
+        <version>4.0.0</version>
         <relativePath>../../../microservice-parent/pom.xml</relativePath>
     </parent>
     <artifactId>authorization-api</artifactId>
-    <version>4.0.2-depfix</version>
+    <version>4.0.2-SNAPHSOT</version>
     <url>https://code.nsa.gov/datawave-authorization-service</url>
     <scm>
         <connection>scm:git:https://github.com/NationalSecurityAgency/datawave-authorization-service.git</connection>
@@ -67,6 +67,10 @@
                     <exclusion>
                         <artifactId>zookeeper</artifactId>
                         <groupId>org.apache.zookeeper</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>javax.el</artifactId>
+                        <groupId>javax.el</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
